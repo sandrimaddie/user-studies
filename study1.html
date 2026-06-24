@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>study · listen & compare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07060e;
+        --panel: #100d1c;
+        --line: rgba(162, 142, 228, 0.16);
+        --line-2: rgba(176, 154, 240, 0.34);
+        --text: #e7e3f2;
+        --muted: #8a82a6;
+        --faint: #544e6c;
+        --lav: #b6a2f2;
+        --blue: #8ab0ee;
+        --ok: #86d2a8;
+        --bad: #e89aa8;
+        --grad: linear-gradient(90deg, #8ab0ee, #b6a2f2);
+        --glow: 0 0 22px rgba(170, 150, 240, 0.28);
+        --mono: "JetBrains Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        background-image: radial-gradient(
+          70% 55% at 50% 28%,
+          rgba(138, 160, 238, 0.06),
+          transparent 62%
+        );
+      }
+      #bg {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 22px 90px;
+      }
+
+      header {
+        padding: 56px 0 8px;
+      }
+      .back {
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .back:hover {
+        color: var(--lav);
+      }
+      .topline {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-top: 22px;
+        gap: 16px;
+      }
+      h1 {
+        font-weight: 500;
+        font-size: clamp(24px, 4vw, 34px);
+        text-transform: lowercase;
+        letter-spacing: -0.01em;
+      }
+      .counter {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        color: var(--lav);
+        white-space: nowrap;
+      }
+      .pbar {
+        height: 3px;
+        border-radius: 3px;
+        background: rgba(162, 142, 228, 0.14);
+        margin-top: 16px;
+        overflow: hidden;
+      }
+      .pbar > i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--grad);
+        box-shadow: var(--glow);
+        transition: width 0.35s;
+      }
+      .intro {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-top: 16px;
+        max-width: 64ch;
+      }
+
+      .stage {
+        margin-top: 26px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 13, 28, 0.86),
+          rgba(11, 9, 21, 0.86)
+        );
+        backdrop-filter: blur(3px);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 26px 24px;
+      }
+      .prompt-label {
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--faint);
+        margin-bottom: 8px;
+      }
+      .prompt-desc {
+        font-size: 18px;
+        color: var(--text);
+        margin-bottom: 22px;
+      }
+      .prompt-desc b {
+        color: var(--lav);
+      }
+
+      .vids {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 8px;
+      }
+      @media (max-width: 680px) {
+        .vids {
+          grid-template-columns: 1fr;
+        }
+      }
+      .vid {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        background: #0b0915;
+      }
+      .vid .name {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin-bottom: 9px;
+      }
+      .vid video,
+      .vid audio {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+        background: #000;
+      }
+
+      .q {
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+      }
+      .stmt {
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      .choice {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .choice label {
+        cursor: pointer;
+      }
+      .choice input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .choice span {
+        display: inline-grid;
+        place-items: center;
+        min-width: 56px;
+        padding: 10px 16px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 13px;
+        transition: 0.16s;
+        text-transform: lowercase;
+      }
+      .choice label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .choice input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .choice input:focus-visible + span {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .q.missing .stmt {
+        color: var(--bad);
+      }
+
+      /* exit + demographics reuse field/scale/seg styles */
+      .slab {
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--lav);
+        margin-bottom: 18px;
+      }
+      .field {
+        margin: 18px 0;
+      }
+      .field > label {
+        display: block;
+        font-size: 13.5px;
+        margin-bottom: 10px;
+      }
+      .req {
+        color: var(--lav);
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea {
+        width: 100%;
+        background: #0b0915;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 13px;
+      }
+      textarea {
+        min-height: 96px;
+        resize: vertical;
+      }
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--lav);
+        box-shadow: var(--glow);
+      }
+      .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .seg label {
+        cursor: pointer;
+      }
+      .seg input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .seg span {
+        display: inline-block;
+        padding: 9px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 13px;
+        transition: 0.18s;
+      }
+      .seg label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .seg input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .scale {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .anchor {
+        font-size: 11px;
+        color: var(--faint);
+      }
+      .anchor.r {
+        margin-left: auto;
+        text-align: right;
+      }
+      .dots {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .dots label {
+        cursor: pointer;
+      }
+      .dots input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .dots span {
+        display: grid;
+        place-items: center;
+        width: 33px;
+        height: 33px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+        transition: 0.16s;
+      }
+      .dots input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .field.missing > label {
+        color: var(--bad);
+      }
+
+      .actions {
+        margin-top: 26px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .btn {
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 13px 26px;
+        border-radius: 999px;
+        border: 1px solid var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: var(--glow);
+      }
+      .btn:hover {
+        filter: brightness(1.08);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--line);
+      }
+      .btn.ghost:hover {
+        color: var(--text);
+        border-color: var(--line-2);
+        box-shadow: none;
+      }
+      .note {
+        font-size: 12px;
+        color: var(--faint);
+      }
+      .done {
+        text-align: center;
+        padding: 80px 0;
+      }
+      .done h2 {
+        font-weight: 500;
+        font-size: 26px;
+        text-transform: lowercase;
+        margin-bottom: 12px;
+      }
+      .done p {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .done a {
+        color: var(--lav);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <header>
+        <a class="back" href="index.html">← back</a>
+        <div class="topline">
+          <h1 id="title">listen &amp; compare</h1>
+          <div class="counter" id="counter"></div>
+        </div>
+        <div class="pbar"><i id="pfill"></i></div>
+        <p class="intro" id="intro">
+          for each character, three short clips use different sound packs (a, b,
+          c). play all three, then answer below. the order is shuffled, so judge
+          only by what you hear.
+        </p>
+      </header>
+
+      <div class="stage" id="stage"></div>
+
+      <div class="actions" id="actions">
+        <button class="btn ghost" id="prev" style="display: none">
+          ← back
+        </button>
+        <button class="btn" id="next">next →</button>
+        <span class="note" id="note"></span>
+      </div>
+
+      <div class="done" id="done" style="display: none">
+        <h2>thank you ✦</h2>
+        <p>
+          your responses were recorded. you can close this tab.<br /><a
+            href="index.html"
+            >← back to study hub</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <script>
+      /* ============================================================
+   EDIT ME — 1) paste your Apps Script Web App URL
+             2) fill in your prompts + video URLs below
+   Each prompt needs three sources keyed by condition:
+     gen      = pure generation (no retrieval)
+     clap     = CLAP retrieval only (raw samples)
+     clap_st  = CLAP retrieval + style transfer (your method)
+   Files can be .mp4 (video) or .wav/.mp3 (audio — set MEDIA="audio")
+   ============================================================ */
+      const ENDPOINT =
+        "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
+      const MEDIA = "video"; // "video" or "audio"
+
+      const PROMPTS = [
+        {
+          id: "p01",
+          desc: "a queen bee",
+          videos: {
+            gen: "videos/p01_gen.mp4",
+            clap: "videos/p01_clap.mp4",
+            clap_st: "videos/p01_clap_st.mp4",
+          },
+        },
+        {
+          id: "p02",
+          desc: "a stone golem",
+          videos: {
+            gen: "videos/p02_gen.mp4",
+            clap: "videos/p02_clap.mp4",
+            clap_st: "videos/p02_clap_st.mp4",
+          },
+        },
+        {
+          id: "p03",
+          desc: "a tiny clockwork robot",
+          videos: {
+            gen: "videos/p03_gen.mp4",
+            clap: "videos/p03_clap.mp4",
+            clap_st: "videos/p03_clap_st.mp4",
+          },
+        },
+        {
+          id: "p04",
+          desc: "a swamp witch",
+          videos: {
+            gen: "videos/p04_gen.mp4",
+            clap: "videos/p04_clap.mp4",
+            clap_st: "videos/p04_clap_st.mp4",
+          },
+        },
+        {
+          id: "p05",
+          desc: "a ghostly knight",
+          videos: {
+            gen: "videos/p05_gen.mp4",
+            clap: "videos/p05_clap.mp4",
+            clap_st: "videos/p05_clap_st.mp4",
+          },
+        },
+        {
+          id: "p06",
+          desc: "a fire elemental",
+          videos: {
+            gen: "videos/p06_gen.mp4",
+            clap: "videos/p06_clap.mp4",
+            clap_st: "videos/p06_clap_st.mp4",
+          },
+        },
+        {
+          id: "p07",
+          desc: "a goblin merchant",
+          videos: {
+            gen: "videos/p07_gen.mp4",
+            clap: "videos/p07_clap.mp4",
+            clap_st: "videos/p07_clap_st.mp4",
+          },
+        },
+        {
+          id: "p08",
+          desc: "a crystal spider",
+          videos: {
+            gen: "videos/p08_gen.mp4",
+            clap: "videos/p08_clap.mp4",
+            clap_st: "videos/p08_clap_st.mp4",
+          },
+        },
+        {
+          id: "p09",
+          desc: "a sentient cloud",
+          videos: {
+            gen: "videos/p09_gen.mp4",
+            clap: "videos/p09_clap.mp4",
+            clap_st: "videos/p09_clap_st.mp4",
+          },
+        },
+        {
+          id: "p10",
+          desc: "a deep-sea leviathan",
+          videos: {
+            gen: "videos/p10_gen.mp4",
+            clap: "videos/p10_clap.mp4",
+            clap_st: "videos/p10_clap_st.mp4",
+          },
+        },
+      ];
+
+      const QUESTIONS = [
+        {
+          key: "coherent",
+          stmt: "which feels most like a single, coherent character?",
+        },
+        {
+          key: "matches",
+          stmt: "which best matches the character description?",
+        },
+        { key: "favourite", stmt: "which is your favourite overall?" },
+        {
+          key: "professional",
+          stmt: "which sounds most like it was made by a professional?",
+        },
+      ];
+      const CONDITIONS = ["gen", "clap", "clap_st"];
+      const SLOTS = ["a", "b", "c"];
+
+      /* ---------- per-participant blind randomization ---------- */
+      function shuffle(a) {
+        a = a.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+      const session = PROMPTS.map((p) => {
+        const order = shuffle(CONDITIONS); // condition assigned to slot a,b,c
+        const map = {};
+        SLOTS.forEach((s, i) => (map[s] = order[i]));
+        return { id: p.id, desc: p.desc, map, answers: {} };
+      });
+
+      /* ---------- state ---------- */
+      const el = (t, c, h) => {
+        const e = document.createElement(t);
+        if (c) e.className = c;
+        if (h != null) e.innerHTML = h;
+        return e;
+      };
+      const stage = document.getElementById("stage");
+      const counter = document.getElementById("counter"),
+        pfill = document.getElementById("pfill");
+      const prevBtn = document.getElementById("prev"),
+        nextBtn = document.getElementById("next"),
+        note = document.getElementById("note");
+      const TOTAL = PROMPTS.length;
+      let step = 0; // 0..TOTAL-1 prompts, TOTAL = exit page
+
+      function renderPrompt(i) {
+        const p = PROMPTS[i],
+          st = session[i];
+        counter.textContent =
+          "prompt " +
+          String(i + 1).padStart(2, "0") +
+          " / " +
+          String(TOTAL).padStart(2, "0");
+        pfill.style.width = (i / (TOTAL + 1)) * 100 + "%";
+        const wrap = el("div");
+        wrap.appendChild(el("div", "prompt-label", "character description"));
+        wrap.appendChild(el("div", "prompt-desc", "<b>" + p.desc + "</b>"));
+        const vids = el("div", "vids");
+        SLOTS.forEach((slot) => {
+          const cond = st.map[slot],
+            src = p.videos[cond];
+          const tag =
+            MEDIA === "audio"
+              ? `<audio controls preload="metadata" src="${src}"></audio>`
+              : `<video controls preload="metadata" src="${src}"></video>`;
+          vids.appendChild(
+            el("div", "vid", `<div class="name">sound ${slot}</div>${tag}`),
+          );
+        });
+        wrap.appendChild(vids);
+        QUESTIONS.forEach((q) => {
+          const block = el("div", "q");
+          block.dataset.q = q.key;
+          block.appendChild(el("p", "stmt", q.stmt));
+          let ch = "";
+          SLOTS.forEach((s) => {
+            const sel = st.answers[q.key] === s ? " checked" : "";
+            ch += `<label><input type="radio" name="${p.id}_${q.key}" value="${s}"${sel}><span>sound ${s}</span></label>`;
+          });
+          block.appendChild(el("div", "choice", ch));
+          wrap.appendChild(block);
+        });
+        stage.replaceChildren(wrap);
+        prevBtn.style.display = i > 0 ? "" : "none";
+        nextBtn.textContent = "next →";
+        note.textContent = "";
+      }
+
+      const EXIT_HTML = `
+  <div class="slab">a few final questions</div>
+  <div class="q" data-name="detect" style="border-top:none;padding-top:0">
+    <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
+    <div class="seg">
+      <label><input type="radio" name="detect" value="yes"><span>yes</span></label>
+      <label><input type="radio" name="detect" value="sometimes"><span>sometimes</span></label>
+      <label><input type="radio" name="detect" value="no"><span>no</span></label>
+    </div>
+  </div>
+  <div class="field" data-name="likelihood">
+    <label>are you more or less likely to consume content (games, video) that uses ai-generated sound?</label>
+    <div class="scale"><span class="anchor">much less</span>
+      <div class="dots">
+        ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+      </div><span class="anchor r">much more</span></div>
+  </div>
+  <div class="field" data-name="ethics" data-optional="1">
+    <label>any comments about the ethics of ai-generated audio or art? <span style="color:var(--faint)">(optional)</span></label>
+    <textarea name="ethics" placeholder="open response…"></textarea>
+  </div>
+  <div class="slab" style="margin-top:26px">about you</div>
+  <div class="field" data-name="age">
+    <label>age <span class="req">*</span></label>
+    <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
+  </div>
+  <div class="q" data-name="plays" style="padding-top:6px">
+    <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
+    <div class="seg">
+      <label><input type="radio" name="plays" value="yes"><span>yes</span></label>
+      <label><input type="radio" name="plays" value="sometimes"><span>sometimes</span></label>
+      <label><input type="radio" name="plays" value="no"><span>no</span></label>
+    </div>
+  </div>
+  <div class="q" data-name="audio_bg">
+    <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
+    <div class="seg">
+      <label><input type="radio" name="audio_bg" value="yes"><span>yes</span></label>
+      <label><input type="radio" name="audio_bg" value="no"><span>no</span></label>
+    </div>
+  </div>`;
+
+      function renderExit() {
+        counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
+        pfill.style.width = (TOTAL / (TOTAL + 1)) * 100 + "%";
+        stage.replaceChildren(el("div", null, EXIT_HTML));
+        prevBtn.style.display = "";
+        nextBtn.textContent = "submit responses";
+        note.textContent = "";
+      }
+
+      function savePrompt(i) {
+        const p = PROMPTS[i],
+          st = session[i];
+        let ok = true;
+        document.querySelectorAll(".q[data-q]").forEach((block) => {
+          const key = block.dataset.q,
+            sel = block.querySelector(`input[name="${p.id}_${key}"]:checked`);
+          if (sel) {
+            st.answers[key] = sel.value;
+            block.classList.remove("missing");
+          } else {
+            ok = false;
+            block.classList.add("missing");
+          }
+        });
+        return ok;
+      }
+      function validateExit() {
+        let ok = true,
+          first = null;
+        document.querySelectorAll(".stage [data-name]").forEach(() => {});
+        stage.querySelectorAll("[data-name]").forEach((node) => {
+          if (node.dataset.optional) return;
+          const name = node.dataset.name,
+            f = node.querySelector(`[name="${name}"]`);
+          const has =
+            f &&
+            (f.type === "radio"
+              ? !!node.querySelector(`[name="${name}"]:checked`)
+              : f.value.trim());
+          node.classList.toggle("missing", !has);
+          if (!has && !first) {
+            first = node;
+            ok = false;
+          }
+        });
+        if (first)
+          first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return ok;
+      }
+      function collectExit() {
+        const ex = {};
+        ["detect", "likelihood", "ethics", "age", "plays", "audio_bg"].forEach(
+          (n) => {
+            const f = stage.querySelector(`[name="${n}"]`);
+            if (!f) return;
+            ex[n] =
+              f.type === "radio"
+                ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
+                : f.value.trim();
+          },
+        );
+        return ex;
+      }
+
+      nextBtn.addEventListener("click", async () => {
+        if (step < TOTAL) {
+          if (!savePrompt(step)) {
+            note.textContent = "please answer all four";
+            return;
+          }
+          step++;
+          if (step < TOTAL) renderPrompt(step);
+          else renderExit();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          if (!validateExit()) {
+            note.textContent = "please complete the required fields";
+            return;
+          }
+          await submitAll();
+        }
+      });
+      prevBtn.addEventListener("click", () => {
+        if (step === TOTAL) {
+          step--;
+          renderPrompt(step);
+        } else if (step > 0) {
+          step--;
+          renderPrompt(step);
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      async function submitAll() {
+        const exit = collectExit();
+        const payload = {
+          study: "study1",
+          submitted_at: new Date().toISOString(),
+          prompts: session.map((s) => {
+            const resolved = {}; // map each chosen slot back to its true condition
+            QUESTIONS.forEach((q) => {
+              const slot = s.answers[q.key];
+              resolved[q.key] = { slot, condition: s.map[slot] };
+            });
+            return {
+              id: s.id,
+              desc: s.desc,
+              slot_map: s.map,
+              answers: resolved,
+            };
+          }),
+          detect: exit.detect,
+          likelihood: exit.likelihood,
+          ethics: exit.ethics,
+          age: exit.age,
+          plays: exit.plays,
+          audio_bg: exit.audio_bg,
+        };
+        try {
+          if (ENDPOINT) {
+            await fetch(ENDPOINT, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload),
+            });
+          } else {
+            console.warn("No ENDPOINT set — payload:", payload);
+          }
+          document.getElementById("actions").style.display = "none";
+          stage.style.display = "none";
+          document.querySelector("header").style.display = "none";
+          document.getElementById("done").style.display = "block";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (err) {
+          note.textContent = "could not send — check connection and retry";
+        }
+      }
+
+      renderPrompt(0);
+
+      /* ---------- ambient background ---------- */
+      (function () {
+        const cv = document.getElementById("bg"),
+          ctx = cv.getContext("2d");
+        const reduce = window.matchMedia(
+          "(prefers-reduced-motion:reduce)",
+        ).matches;
+        let w,
+          h,
+          dpr,
+          nodes = [];
+        const rnd = () => Math.random() * 2 - 1;
+        const layout = [
+          [0.5, 0.3],
+          [0.18, 0.2],
+          [0.82, 0.16],
+          [0.3, 0.52],
+          [0.7, 0.46],
+          [0.5, 0.62],
+          [0.1, 0.7],
+          [0.9, 0.66],
+          [0.38, 0.84],
+          [0.66, 0.82],
+          [0.22, 0.4],
+          [0.86, 0.4],
+          [0.5, 0.12],
+          [0.14, 0.9],
+          [0.88, 0.88],
+        ];
+        function size() {
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = cv.clientWidth = window.innerWidth;
+          h = cv.clientHeight = window.innerHeight;
+          cv.width = w * dpr;
+          cv.height = h * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          nodes = layout.map((p, i) => ({
+            x: p[0] * w,
+            y: p[1] * h,
+            vx: rnd() * 0.32,
+            vy: rnd() * 0.32,
+            ph: i * 1.3,
+            r: i === 5 ? 4 : 2.6,
+          }));
+        }
+        size();
+        window.addEventListener("resize", size);
+        function st() {
+          const m = 24;
+          for (const n of nodes) {
+            n.vx += rnd() * 0.01;
+            n.vy += rnd() * 0.01;
+            n.vx = Math.max(-0.42, Math.min(0.42, n.vx));
+            n.vy = Math.max(-0.42, Math.min(0.42, n.vy));
+            n.x += n.vx;
+            n.y += n.vy;
+            if (n.x < m) {
+              n.x = m;
+              n.vx *= -1;
+            }
+            if (n.x > w - m) {
+              n.x = w - m;
+              n.vx *= -1;
+            }
+            if (n.y < m) {
+              n.y = m;
+              n.vy *= -1;
+            }
+            if (n.y > h - m) {
+              n.y = h - m;
+              n.vy *= -1;
+            }
+          }
+        }
+        function frame(t, mv) {
+          if (mv) st();
+          ctx.clearRect(0, 0, w, h);
+          const thr = Math.min(w, h) * 0.32;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < nodes.length; i++)
+            for (let j = i + 1; j < nodes.length; j++) {
+              const d = Math.hypot(
+                nodes[i].x - nodes[j].x,
+                nodes[i].y - nodes[j].y,
+              );
+              if (d < thr) {
+                ctx.strokeStyle =
+                  "rgba(150,135,225," + (0.08 * (1 - d / thr)).toFixed(3) + ")";
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+              }
+            }
+          for (const p of nodes) {
+            const pulse = 0.5 + 0.4 * Math.sin(t * 1.1 + p.ph);
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 7);
+            g.addColorStop(
+              0,
+              "rgba(190,172,246," + (0.45 * pulse).toFixed(2) + ")",
+            );
+            g.addColorStop(0.4, "rgba(150,170,238,0.12)");
+            g.addColorStop(1, "rgba(150,170,238,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 7, 0, 7);
+            ctx.fill();
+            ctx.fillStyle = "rgba(225,222,246,0.6)";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, 7);
+            ctx.fill();
+          }
+        }
+        if (reduce) {
+          frame(0, false);
+        } else {
+          let t = 0;
+          (function loop() {
+            t += 0.01;
+            frame(t, true);
+            requestAnimationFrame(loop);
+          })();
+        }
+      })();
+    </script>
+  </body>
+</html>

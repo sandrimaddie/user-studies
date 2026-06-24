@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>study · use the tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07060e;
+        --panel: #100d1c;
+        --line: rgba(162, 142, 228, 0.16);
+        --line-2: rgba(176, 154, 240, 0.34);
+        --text: #e7e3f2;
+        --muted: #8a82a6;
+        --faint: #544e6c;
+        --lav: #b6a2f2;
+        --blue: #8ab0ee;
+        --ok: #86d2a8;
+        --bad: #e89aa8;
+        --grad: linear-gradient(90deg, #8ab0ee, #b6a2f2);
+        --glow: 0 0 22px rgba(170, 150, 240, 0.28);
+        --mono: "JetBrains Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        background-image: radial-gradient(
+          70% 55% at 50% 30%,
+          rgba(138, 160, 238, 0.06),
+          transparent 62%
+        );
+      }
+      #bg {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 22px 90px;
+      }
+
+      header {
+        padding: 64px 0 8px;
+      }
+      .back {
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+        letter-spacing: 0.04em;
+      }
+      .back:hover {
+        color: var(--lav);
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        margin: 22px 0 14px;
+      }
+      .status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--ok);
+        box-shadow: 0 0 10px var(--ok);
+      }
+      h1 {
+        font-weight: 500;
+        font-size: clamp(26px, 4.4vw, 38px);
+        text-transform: lowercase;
+        letter-spacing: -0.01em;
+      }
+      .intro {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 16px;
+        max-width: 62ch;
+      }
+      .intro b {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .section {
+        margin-top: 30px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 13, 28, 0.86),
+          rgba(11, 9, 21, 0.86)
+        );
+        backdrop-filter: blur(3px);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 26px 24px;
+      }
+      .slab {
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--lav);
+        margin-bottom: 4px;
+      }
+      .sdesc {
+        font-size: 12.5px;
+        color: var(--faint);
+        margin-bottom: 20px;
+      }
+
+      .field {
+        margin: 18px 0;
+      }
+      .field > label {
+        display: block;
+        font-size: 13.5px;
+        color: var(--text);
+        margin-bottom: 10px;
+      }
+      .field .req {
+        color: var(--lav);
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        background: #0b0915;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 13px;
+      }
+      select {
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) 18px,
+          calc(100% - 13px) 18px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--lav);
+        box-shadow: var(--glow);
+      }
+
+      .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .seg label {
+        cursor: pointer;
+      }
+      .seg input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .seg span {
+        display: inline-block;
+        padding: 9px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 13px;
+        transition: 0.18s;
+      }
+      .seg label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .seg input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .seg input:focus-visible + span {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+
+      .q {
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+      }
+      .q:first-of-type {
+        border-top: none;
+      }
+      .factor {
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--blue);
+        margin: 8px 0 2px;
+      }
+      .stmt {
+        font-size: 14px;
+        margin-bottom: 13px;
+      }
+      .stmt .qn {
+        color: var(--faint);
+        margin-right: 8px;
+      }
+      .scale {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .anchor {
+        font-size: 11px;
+        color: var(--faint);
+        flex: 0 0 auto;
+      }
+      .anchor.l {
+        min-width: 96px;
+      }
+      .anchor.r {
+        margin-left: auto;
+        text-align: right;
+      }
+      .dots {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+      }
+      .dots label {
+        cursor: pointer;
+        position: relative;
+      }
+      .dots input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .dots span {
+        display: grid;
+        place-items: center;
+        width: 33px;
+        height: 33px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+        transition: 0.16s;
+      }
+      .dots label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .dots input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .dots input:focus-visible + span {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .q.missing .stmt,
+      .field.missing > label {
+        color: var(--bad);
+      }
+
+      .actions {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .btn {
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 13px 26px;
+        border-radius: 999px;
+        border: 1px solid var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: var(--glow);
+      }
+      .btn:hover {
+        filter: brightness(1.08);
+      }
+      .note {
+        font-size: 12px;
+        color: var(--faint);
+      }
+      .done {
+        text-align: center;
+        padding: 80px 0;
+      }
+      .done h2 {
+        font-weight: 500;
+        font-size: 26px;
+        text-transform: lowercase;
+        margin-bottom: 12px;
+      }
+      .done p {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .done a {
+        color: var(--lav);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <header>
+        <a class="back" href="index.html">← back</a>
+        <div class="status"><span class="dot"></span>~15 minute session</div>
+        <h1>use the tool</h1>
+        <p class="intro">
+          first, spend about <b>15 minutes</b> exploring the tool — generate a
+          few character sound packs and try the controls. when you're done,
+          answer the questions below based on that experience. there are no
+          right answers.
+        </p>
+      </header>
+
+      <form id="form" novalidate>
+        <div id="sections"></div>
+        <div class="actions">
+          <button type="submit" class="btn">submit responses</button>
+          <span class="note">all fields are required</span>
+        </div>
+      </form>
+
+      <div class="done" id="done" style="display: none">
+        <h2>thank you ✦</h2>
+        <p>
+          your responses were recorded. you can close this tab.<br /><a
+            href="index.html"
+            >← back to study hub</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <script>
+      /* ============================================================
+   EDIT ME — paste your Apps Script Web App URL here
+   ============================================================ */
+      const ENDPOINT =
+        "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
+
+      /* ---------- questionnaire content ---------- */
+      const EXP = ["none", "beginner", "intermediate", "advanced"];
+
+      const ATTITUDES = [
+        {
+          n: "att_ai_general",
+          t: "in general, are you for or against ai tools in your creative pipeline?",
+          l: "strongly against",
+          r: "strongly for",
+        },
+        {
+          n: "att_creativity",
+          t: "this tool promotes rather than hinders my creativity.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_use_gamedev",
+          t: "i would use this tool in my game-development pipeline.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_use_music",
+          t: "i would use this tool in my music-production / composition pipeline.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+      ];
+
+      const SUS = [
+        "i think that i would like to use this tool frequently.",
+        "i found the tool unnecessarily complex.",
+        "i thought the tool was easy to use.",
+        "i think that i would need the support of a technical person to be able to use this tool.",
+        "i found the various functions in this tool were well integrated.",
+        "i thought there was too much inconsistency in this tool.",
+        "i would imagine that most people would learn to use this tool very quickly.",
+        "i found the tool very cumbersome to use.",
+        "i felt very confident using the tool.",
+        "i needed to learn a lot of things before i could get going with this tool.",
+      ];
+
+      const CSI = [
+        {
+          f: "exploration",
+          items: [
+            "it was easy for me to explore many different ideas, options, designs, or outcomes using this tool.",
+            "the tool was helpful in allowing me to track different ideas, outcomes, or possibilities.",
+          ],
+        },
+        {
+          f: "expressiveness",
+          items: [
+            "i was able to be very creative while doing the activity inside this tool.",
+            "the tool allowed me to be very expressive.",
+          ],
+        },
+        {
+          f: "immersion",
+          items: [
+            "my attention was fully tuned to the activity, and i forgot about the tool i was using.",
+            "i became so absorbed in the activity that i forgot about the tool i was using.",
+          ],
+        },
+        {
+          f: "enjoyment",
+          items: [
+            "i would be happy to use this tool on a regular basis.",
+            "i enjoyed using the tool.",
+          ],
+        },
+        {
+          f: "results worth effort",
+          items: [
+            "i was satisfied with what i got out of the tool.",
+            "what i was able to produce was worth the effort i had to exert to produce it.",
+          ],
+        },
+      ];
+
+      /* ---------- builders ---------- */
+      const el = (t, c, h) => {
+        const e = document.createElement(t);
+        if (c) e.className = c;
+        if (h != null) e.innerHTML = h;
+        return e;
+      };
+      function segField(name, label, opts) {
+        const f = el("div", "field");
+        f.dataset.req = "1";
+        f.appendChild(el("label", null, label + ' <span class="req">*</span>'));
+        const seg = el("div", "seg");
+        opts.forEach((o) => {
+          const id = name + "_" + o.replace(/\W/g, "");
+          seg.innerHTML += `<label><input type="radio" name="${name}" value="${o}"><span>${o}</span></label>`;
+        });
+        f.appendChild(seg);
+        return f;
+      }
+      function scaleQ(name, stmt, n, left, right, num, factor) {
+        const q = el("div", "q");
+        q.dataset.req = "1";
+        q.dataset.name = name;
+        if (factor) q.appendChild(el("div", "factor", factor));
+        q.appendChild(
+          el("p", "stmt", (n ? `<span class="qn">${n}</span>` : "") + stmt),
+        );
+        let dots = "";
+        for (let i = 1; i <= num; i++)
+          dots += `<label><input type="radio" name="${name}" value="${i}"><span>${i}</span></label>`;
+        q.appendChild(
+          el(
+            "div",
+            "scale",
+            `<span class="anchor l">${left}</span><div class="dots">${dots}</div><span class="anchor r">${right}</span>`,
+          ),
+        );
+        return q;
+      }
+      function section(slab, desc) {
+        const s = el("section", "section");
+        s.appendChild(el("div", "slab", slab));
+        if (desc) s.appendChild(el("div", "sdesc", desc));
+        return s;
+      }
+
+      const root = document.getElementById("sections");
+
+      /* section 1 — about you */
+      let s = section("about you");
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.dataset.req = "1";
+          f.appendChild(
+            el(
+              "label",
+              null,
+              'which best describes you? <span class="req">*</span>',
+            ),
+          );
+          f.innerHTML += `<select name="role"><option value="" disabled selected>select…</option>
+    <option>indie game dev</option><option>sound designer</option><option>composer</option>
+    <option>hobbyist</option><option>student</option><option>other</option></select>`;
+          return f;
+        })(),
+      );
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.dataset.req = "1";
+          f.appendChild(el("label", null, 'age <span class="req">*</span>'));
+          f.innerHTML += `<input type="number" name="age" min="12" max="99" placeholder="e.g. 27">`;
+          return f;
+        })(),
+      );
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.dataset.req = "1";
+          f.appendChild(el("label", null, 'gender <span class="req">*</span>'));
+          f.innerHTML += `<input type="text" name="gender" placeholder="how you describe it">`;
+          return f;
+        })(),
+      );
+      s.appendChild(segField("exp_daw", "experience with daws", EXP));
+      s.appendChild(
+        segField("exp_gamedev", "experience with indie game development", EXP),
+      );
+      s.appendChild(
+        segField("exp_ai", "experience with ai creative tools", EXP),
+      );
+      root.appendChild(s);
+
+      /* section 2 — attitudes */
+      s = section(
+        "attitudes",
+        "1 = strongly disagree / against · 5 = strongly agree / for",
+      );
+      ATTITUDES.forEach((a, i) =>
+        s.appendChild(
+          scaleQ(a.n, a.t, String(i + 1).padStart(2, "0"), a.l, a.r, 5),
+        ),
+      );
+      root.appendChild(s);
+
+      /* section 3 — system usability scale */
+      s = section(
+        "system usability scale",
+        "brooke (1996) · 1 = strongly disagree · 5 = strongly agree",
+      );
+      SUS.forEach((t, i) =>
+        s.appendChild(
+          scaleQ(
+            "sus_" + (i + 1),
+            t,
+            String(i + 1).padStart(2, "0"),
+            "strongly disagree",
+            "strongly agree",
+            5,
+          ),
+        ),
+      );
+      root.appendChild(s);
+
+      /* section 4 — creativity support index */
+      s = section(
+        "creativity support index",
+        "cherry & latulipe (2014) · 1 = highly disagree · 10 = highly agree",
+      );
+      let ci = 0;
+      CSI.forEach((group) =>
+        group.items.forEach((t, k) => {
+          ci++;
+          s.appendChild(
+            scaleQ(
+              "csi_" + ci,
+              t,
+              String(ci).padStart(2, "0"),
+              "highly disagree",
+              "highly agree",
+              10,
+              k === 0 ? group.f : null,
+            ),
+          );
+        }),
+      );
+      root.appendChild(s);
+
+      /* ---------- validation + submit ---------- */
+      const form = document.getElementById("form");
+      function collect() {
+        const data = {
+          study: "study2",
+          submitted_at: new Date().toISOString(),
+        };
+        new FormData(form).forEach((v, k) => (data[k] = v));
+        return data;
+      }
+      function validate() {
+        let firstMissing = null;
+        document.querySelectorAll('[data-req="1"]').forEach((node) => {
+          const name = node.dataset.name || node.querySelector("[name]")?.name;
+          const ok =
+            name &&
+            form.querySelector(`[name="${name}"]`) &&
+            (form.querySelector(`[name="${name}"]:checked`) ||
+              (() => {
+                const f = form.querySelector(`[name="${name}"]`);
+                return f && f.type !== "radio" && f.value;
+              })());
+          node.classList.toggle("missing", !ok);
+          if (!ok && !firstMissing) firstMissing = node;
+        });
+        if (firstMissing)
+          firstMissing.scrollIntoView({ behavior: "smooth", block: "center" });
+        return !firstMissing;
+      }
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+        const payload = collect();
+        try {
+          if (ENDPOINT) {
+            await fetch(ENDPOINT, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload),
+            });
+          } else {
+            console.warn("No ENDPOINT set — payload:", payload);
+          }
+          form.style.display = "none";
+          document.getElementById("done").style.display = "block";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (err) {
+          alert("Could not send — check your connection and try again.");
+        }
+      });
+
+      /* ---------- ambient background ---------- */
+      (function () {
+        const cv = document.getElementById("bg"),
+          ctx = cv.getContext("2d");
+        const reduce = window.matchMedia(
+          "(prefers-reduced-motion:reduce)",
+        ).matches;
+        let w,
+          h,
+          dpr,
+          nodes = [];
+        const rnd = () => Math.random() * 2 - 1;
+        const layout = [
+          [0.5, 0.3],
+          [0.18, 0.2],
+          [0.82, 0.16],
+          [0.3, 0.52],
+          [0.7, 0.46],
+          [0.5, 0.62],
+          [0.1, 0.7],
+          [0.9, 0.66],
+          [0.38, 0.84],
+          [0.66, 0.82],
+          [0.22, 0.4],
+          [0.86, 0.4],
+          [0.5, 0.12],
+          [0.14, 0.9],
+          [0.88, 0.88],
+        ];
+        function size() {
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = cv.clientWidth = window.innerWidth;
+          h = cv.clientHeight = window.innerHeight;
+          cv.width = w * dpr;
+          cv.height = h * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          nodes = layout.map((p, i) => ({
+            x: p[0] * w,
+            y: p[1] * h,
+            vx: rnd() * 0.32,
+            vy: rnd() * 0.32,
+            ph: i * 1.3,
+            r: i === 5 ? 4 : 2.6,
+          }));
+        }
+        size();
+        window.addEventListener("resize", size);
+        function step() {
+          const m = 24;
+          for (const n of nodes) {
+            n.vx += rnd() * 0.01;
+            n.vy += rnd() * 0.01;
+            n.vx = Math.max(-0.42, Math.min(0.42, n.vx));
+            n.vy = Math.max(-0.42, Math.min(0.42, n.vy));
+            n.x += n.vx;
+            n.y += n.vy;
+            if (n.x < m) {
+              n.x = m;
+              n.vx *= -1;
+            }
+            if (n.x > w - m) {
+              n.x = w - m;
+              n.vx *= -1;
+            }
+            if (n.y < m) {
+              n.y = m;
+              n.vy *= -1;
+            }
+            if (n.y > h - m) {
+              n.y = h - m;
+              n.vy *= -1;
+            }
+          }
+        }
+        function frame(t, mv) {
+          if (mv) step();
+          ctx.clearRect(0, 0, w, h);
+          const thr = Math.min(w, h) * 0.32;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < nodes.length; i++)
+            for (let j = i + 1; j < nodes.length; j++) {
+              const d = Math.hypot(
+                nodes[i].x - nodes[j].x,
+                nodes[i].y - nodes[j].y,
+              );
+              if (d < thr) {
+                ctx.strokeStyle =
+                  "rgba(150,135,225," + (0.08 * (1 - d / thr)).toFixed(3) + ")";
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+              }
+            }
+          for (const p of nodes) {
+            const pulse = 0.5 + 0.4 * Math.sin(t * 1.1 + p.ph);
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 7);
+            g.addColorStop(
+              0,
+              "rgba(190,172,246," + (0.45 * pulse).toFixed(2) + ")",
+            );
+            g.addColorStop(0.4, "rgba(150,170,238,0.12)");
+            g.addColorStop(1, "rgba(150,170,238,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 7, 0, 7);
+            ctx.fill();
+            ctx.fillStyle = "rgba(225,222,246,0.6)";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, 7);
+            ctx.fill();
+          }
+        }
+        if (reduce) {
+          frame(0, false);
+        } else {
+          let t = 0;
+          (function loop() {
+            t += 0.01;
+            frame(t, true);
+            requestAnimationFrame(loop);
+          })();
+        }
+      })();
+    </script>
+  </body>
+</html>
