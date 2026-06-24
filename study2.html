@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>study · use the tool</title>
+    <title>usability questionnaire</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -347,13 +347,13 @@
     <div class="wrap">
       <header>
         <a class="back" href="index.html">← back</a>
-        <div class="status"><span class="dot"></span>~15 minute session</div>
-        <h1>use the tool</h1>
+        <div class="status"><span class="dot"></span>10–20 minute session</div>
+        <h1>usability questionnaire</h1>
         <p class="intro">
-          first, spend about <b>15 minutes</b> exploring the tool — generate a
+          first, spend about <b>10-20 minutes</b> exploring the tool: generate a
           few character sound packs and try the controls. when you're done,
           answer the questions below based on that experience. there are no
-          right answers.
+          wrong answers.
         </p>
       </header>
 
@@ -377,13 +377,9 @@
     </div>
 
     <script>
-      /* ============================================================
-   EDIT ME — paste your Apps Script Web App URL here
-   ============================================================ */
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
 
-      /* ---------- questionnaire content ---------- */
       const EXP = ["none", "beginner", "intermediate", "advanced"];
 
       const ATTITUDES = [
@@ -396,6 +392,24 @@
         {
           n: "att_creativity",
           t: "this tool promotes rather than hinders my creativity.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_quality",
+          t: "the quality of the samples this tool provided is good.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_use_ingame",
+          t: "i would use the samples this tool provided me with in a game.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_style_transfer",
+          t: "the style transfer feature is fun and usable.",
           l: "strongly disagree",
           r: "strongly agree",
         },
@@ -464,7 +478,6 @@
         },
       ];
 
-      /* ---------- builders ---------- */
       const el = (t, c, h) => {
         const e = document.createElement(t);
         if (c) e.className = c;
@@ -477,7 +490,6 @@
         f.appendChild(el("label", null, label + ' <span class="req">*</span>'));
         const seg = el("div", "seg");
         opts.forEach((o) => {
-          const id = name + "_" + o.replace(/\W/g, "");
           seg.innerHTML += `<label><input type="radio" name="${name}" value="${o}"><span>${o}</span></label>`;
         });
         f.appendChild(seg);
@@ -512,7 +524,6 @@
 
       const root = document.getElementById("sections");
 
-      /* section 1 — about you */
       let s = section("about you");
       s.appendChild(
         (() => {
@@ -541,15 +552,15 @@
         })(),
       );
       s.appendChild(
-        (() => {
-          const f = el("div", "field");
-          f.dataset.req = "1";
-          f.appendChild(el("label", null, 'gender <span class="req">*</span>'));
-          f.innerHTML += `<input type="text" name="gender" placeholder="how you describe it">`;
-          return f;
-        })(),
+        segField("gender", "gender", ["female", "male", "non-binary", "other"]),
       );
-      s.appendChild(segField("exp_daw", "experience with daws", EXP));
+      s.appendChild(
+        segField(
+          "exp_daw",
+          "experience with DAWs (Ableton, FL Studio, Logic Pro, etc.)",
+          EXP,
+        ),
+      );
       s.appendChild(
         segField("exp_gamedev", "experience with indie game development", EXP),
       );
@@ -558,9 +569,8 @@
       );
       root.appendChild(s);
 
-      /* section 2 — attitudes */
       s = section(
-        "attitudes",
+        "General Impressions",
         "1 = strongly disagree / against · 5 = strongly agree / for",
       );
       ATTITUDES.forEach((a, i) =>
@@ -570,7 +580,6 @@
       );
       root.appendChild(s);
 
-      /* section 3 — system usability scale */
       s = section(
         "system usability scale",
         "brooke (1996) · 1 = strongly disagree · 5 = strongly agree",
@@ -589,7 +598,6 @@
       );
       root.appendChild(s);
 
-      /* section 4 — creativity support index */
       s = section(
         "creativity support index",
         "cherry & latulipe (2014) · 1 = highly disagree · 10 = highly agree",
@@ -613,7 +621,6 @@
       );
       root.appendChild(s);
 
-      /* ---------- validation + submit ---------- */
       const form = document.getElementById("form");
       function collect() {
         const data = {
@@ -665,7 +672,6 @@
         }
       });
 
-      /* ---------- ambient background ---------- */
       (function () {
         const cv = document.getElementById("bg"),
           ctx = cv.getContext("2d");

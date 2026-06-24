@@ -440,17 +440,15 @@
 
     <script>
       /* ============================================================
-   EDIT ME — 1) paste your Apps Script Web App URL
-             2) fill in your prompts + video URLs below
    Each prompt needs three sources keyed by condition:
      gen      = pure generation (no retrieval)
      clap     = CLAP retrieval only (raw samples)
      clap_st  = CLAP retrieval + style transfer (your method)
-   Files can be .mp4 (video) or .wav/.mp3 (audio — set MEDIA="audio")
+   Files can be .mp4 (video) 
    ============================================================ */
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
-      const MEDIA = "video"; // "video" or "audio"
+      const MEDIA = "video";
 
       const PROMPTS = [
         {
@@ -555,10 +553,6 @@
           stmt: "which best matches the character description?",
         },
         { key: "favourite", stmt: "which is your favourite overall?" },
-        {
-          key: "professional",
-          stmt: "which sounds most like it was made by a professional?",
-        },
       ];
       const CONDITIONS = ["gen", "clap", "clap_st"];
       const SLOTS = ["a", "b", "c"];

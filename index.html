@@ -47,7 +47,6 @@
           transparent 62%
         );
       }
-      /* ambient full-screen constellation behind everything */
       #bg {
         position: fixed;
         inset: 0;
@@ -105,9 +104,12 @@
       }
       .hero p {
         margin-top: 22px;
-        max-width: 60ch;
+        max-width: 64ch;
         color: var(--muted);
         font-size: 15px;
+      }
+      .hero p .lead {
+        color: var(--text);
       }
 
       .grid {
@@ -233,9 +235,24 @@
         <div class="eyebrow">eth zürich · game technology center</div>
         <h1>designing <em>character sound</em> for indie games</h1>
         <p>
-          a research tool that turns a character description into a coherent
-          sound pack — retrieving samples and restyling them so a goblin sounds
-          like a goblin. two short studies below help evaluate it.
+          <span class="lead">hi there!</span> i'm maddie, an ETH MSc student
+          currently doing my thesis at ETH's Game Technology Center. i'm
+          thrilled to share with you what i've been building: a tool that turns
+          a character description into a coherent sample pack.<br /><br />
+          this tool is meant to be fun for everyone, from sound designers, to
+          indie game developers, to people who just want to play around. my hope
+          is that it helps in the creative process for sound designing
+          characters and gives access to sound design for less experienced
+          users, whilst remaining fun and novel for those who have
+          experience.<br /><br />
+          your help would be greatly appreciated to help me evaluate this tool!
+          below are two different questionnaires:<br />
+          1. listen and compare: you can do this one directly without testing
+          the tool<br />
+          2. usability questionnaire: this one requires you to spend some time
+          on the tool (link below) before answering<br />
+          you may fill one, or both. thanks for your time and i hope you have
+          fun!
         </p>
       </header>
 
@@ -255,8 +272,8 @@
           <span class="tag">study · usability</span>
           <h2>use the tool</h2>
           <p>
-            try the tool for ~15 minutes, then answer a questionnaire about how
-            it felt to use and to create with.
+            try the tool for 10–20 minutes, then answer a questionnaire about
+            how it felt to use and to create with.
           </p>
           <span class="go">start study</span>
         </a>
@@ -272,7 +289,7 @@
     <footer><p>master's thesis · madeleine · gtc eth zürich</p></footer>
 
     <script>
-      const TOOL_URL = ""; /* set once the tool is deployed */
+      const TOOL_URL = "";
       (function () {
         if (TOOL_URL) {
           const c = document.getElementById("tool-card");
@@ -283,7 +300,6 @@
         }
       })();
 
-      /* ambient node constellation across the whole viewport */
       (function () {
         const cv = document.getElementById("bg"),
           ctx = cv.getContext("2d");
@@ -334,7 +350,7 @@
           const m = 24;
           for (const n of nodes) {
             n.vx += rnd() * 0.01;
-            n.vy += rnd() * 0.01; // gentle wander
+            n.vy += rnd() * 0.01;
             n.vx = Math.max(-0.45, Math.min(0.45, n.vx));
             n.vy = Math.max(-0.45, Math.min(0.45, n.vy));
             n.x += n.vx;
