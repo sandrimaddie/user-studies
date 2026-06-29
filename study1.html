@@ -305,6 +305,7 @@
       }
       input[type="text"],
       input[type="number"],
+      input[type="email"],
       textarea {
         width: 100%;
         background: #0b0915;
@@ -440,6 +441,46 @@
         font-size: 12px;
         color: var(--faint);
       }
+      .prize {
+        max-width: 420px;
+        margin: 24px auto 0;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 13, 28, 0.6),
+          rgba(11, 9, 21, 0.6)
+        );
+        text-align: left;
+      }
+      .prize-line {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+        text-align: center;
+      }
+      .prize-line b {
+        color: var(--lav);
+      }
+      .prize input {
+        margin-bottom: 10px;
+      }
+      .prize .btn {
+        width: 100%;
+      }
+      .prize-note {
+        font-size: 12px;
+        color: var(--bad);
+        margin-top: 8px;
+        text-align: center;
+        min-height: 1em;
+      }
+      .prize-after {
+        color: var(--lav);
+        font-size: 14px;
+        margin-top: 18px;
+      }
       .done {
         text-align: center;
         padding: 80px 0;
@@ -489,9 +530,26 @@
 
       <div class="done" id="done" style="display: none">
         <h2>thank you ✦</h2>
+        <p>your responses were recorded.</p>
+        <div class="prize" id="prize">
+          <p class="prize-line">
+            optional — enter the draw for
+            <b>2 × CHF 20 galaxus vouchers</b>
+          </p>
+          <input type="text" id="prize-name" placeholder="your name" />
+          <input
+            type="email"
+            id="prize-email"
+            placeholder="email (so we can reach you if you win)"
+          />
+          <button class="btn" id="prize-btn" type="button">enter draw</button>
+          <p class="prize-note" id="prize-note"></p>
+        </div>
+        <p class="prize-after" id="prize-after" style="display: none">
+          you're in the draw ✦
+        </p>
         <p>
-          your responses were recorded. you can close this tab.<br /><a
-            href="index.html"
+          you can close this tab.<br /><a href="index.html"
             >← back to study hub</a
           >
         </p>
@@ -652,15 +710,19 @@
         nextBtn = document.getElementById("next"),
         note = document.getElementById("note");
       const TOTAL = PROMPTS.length;
-      let step = 0;
+      let step = 0; // 0..TOTAL-1 prompts, TOTAL = exit page
+
+      /* ---------- ranking: keep each rank unique, auto-fill the last ---------- */
       function enforceRank(block, changed) {
         const slot = changed.name.split("_").pop();
         const rank = changed.value;
+        // 1) the chosen rank can only belong to one sound — clear it elsewhere
         block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
           if (inp === changed) return;
           if (inp.value === rank && inp.name.split("_").pop() !== slot)
             inp.checked = false;
         });
+        // 2) if two of three are set, the third is forced — fill it in
         const assigned = {};
         block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
           assigned[inp.name.split("_").pop()] = inp.value;
@@ -679,6 +741,7 @@
         }
         block.classList.remove("missing");
       }
+      // setting .checked programmatically doesn't fire change, so no recursion
       stage.addEventListener("change", (e) => {
         const input = e.target;
         if (!input.matches('input[type="radio"]')) return;
@@ -909,10 +972,10 @@
           study: "study1",
           submitted_at: new Date().toISOString(),
           prompts: session.map((s) => {
-            const resolved = {}; // map each chosen slot back to its true condition
+            const resolved = {};
             QUESTIONS.forEach((q) => {
               if (q.type === "rank") {
-                const ranks = s.answers[q.key] || {}; // slot -> rank
+                const ranks = s.answers[q.key] || {};
                 resolved[q.key] = Object.entries(ranks)
                   .map(([slot, rank]) => ({
                     rank: Number(rank),
@@ -961,6 +1024,47 @@
       }
 
       renderPrompt(0);
+
+      /* ---------- prize draw (separate submission, decoupled from answers) ---------- */
+      (function () {
+        const btn = document.getElementById("prize-btn");
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+          const name = document.getElementById("prize-name").value.trim();
+          const email = document.getElementById("prize-email").value.trim();
+          const pnote = document.getElementById("prize-note");
+          if (!name) {
+            pnote.textContent = "please enter a name (or just close the tab)";
+            return;
+          }
+          btn.disabled = true;
+          pnote.textContent = "";
+          const prizePayload = {
+            type: "prize_draw",
+            study: "study1",
+            name,
+            email,
+            submitted_at: new Date().toISOString(),
+          };
+          try {
+            if (ENDPOINT) {
+              await fetch(ENDPOINT, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(prizePayload),
+              });
+            } else {
+              console.warn("No ENDPOINT set — prize payload:", prizePayload);
+            }
+            document.getElementById("prize").style.display = "none";
+            document.getElementById("prize-after").style.display = "block";
+          } catch (err) {
+            pnote.textContent = "could not enter — check connection and retry";
+            btn.disabled = false;
+          }
+        });
+      })();
 
       /* ---------- ambient background ---------- */
       (function () {
