@@ -224,6 +224,66 @@
         color: var(--bad);
       }
 
+      /* ranking question (favourite) */
+      .rankhint {
+        font-size: 11px;
+        color: var(--faint);
+        margin: -4px 0 12px;
+      }
+      .rankrows {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .rankrow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .ranklabel {
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        min-width: 74px;
+      }
+      .rankopts {
+        display: flex;
+        gap: 7px;
+      }
+      .rankopts label {
+        cursor: pointer;
+      }
+      .rankopts input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .rankopts span {
+        display: grid;
+        place-items: center;
+        width: 33px;
+        height: 33px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+        transition: 0.16s;
+      }
+      .rankopts label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .rankopts input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .rankopts input:focus-visible + span {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+
       /* exit + demographics reuse field/scale/seg styles */
       .slab {
         font-size: 11px;
@@ -546,16 +606,21 @@
       const QUESTIONS = [
         {
           key: "coherent",
-          stmt: "which feels most like a single, coherent character?",
+          stmt: "in which video do the sounds fit together most consistently?",
         },
         {
           key: "matches",
           stmt: "which best matches the character description?",
         },
-        { key: "favourite", stmt: "which is your favourite overall?" },
+        {
+          key: "favourite",
+          stmt: "rank the sounds — 1 = your favourite, 3 = least",
+          type: "rank",
+        },
       ];
       const CONDITIONS = ["gen", "clap", "clap_st"];
       const SLOTS = ["a", "b", "c"];
+      const RANKS = ["1", "2", "3"];
 
       /* ---------- per-participant blind randomization ---------- */
       function shuffle(a) {
@@ -587,7 +652,39 @@
         nextBtn = document.getElementById("next"),
         note = document.getElementById("note");
       const TOTAL = PROMPTS.length;
-      let step = 0; // 0..TOTAL-1 prompts, TOTAL = exit page
+      let step = 0;
+      function enforceRank(block, changed) {
+        const slot = changed.name.split("_").pop();
+        const rank = changed.value;
+        block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
+          if (inp === changed) return;
+          if (inp.value === rank && inp.name.split("_").pop() !== slot)
+            inp.checked = false;
+        });
+        const assigned = {};
+        block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
+          assigned[inp.name.split("_").pop()] = inp.value;
+        });
+        const assignedSlots = Object.keys(assigned);
+        if (assignedSlots.length === SLOTS.length - 1) {
+          const missingSlot = SLOTS.find((s) => !assignedSlots.includes(s));
+          const used = Object.values(assigned);
+          const missingRank = RANKS.find((r) => !used.includes(r));
+          if (missingSlot && missingRank) {
+            const tgt = block.querySelector(
+              `input[name$="_${missingSlot}"][value="${missingRank}"]`,
+            );
+            if (tgt) tgt.checked = true;
+          }
+        }
+        block.classList.remove("missing");
+      }
+      stage.addEventListener("change", (e) => {
+        const input = e.target;
+        if (!input.matches('input[type="radio"]')) return;
+        const block = input.closest('.q[data-type="rank"]');
+        if (block) enforceRank(block, input);
+      });
 
       function renderPrompt(i) {
         const p = PROMPTS[i],
@@ -617,13 +714,29 @@
         QUESTIONS.forEach((q) => {
           const block = el("div", "q");
           block.dataset.q = q.key;
-          block.appendChild(el("p", "stmt", q.stmt));
-          let ch = "";
-          SLOTS.forEach((s) => {
-            const sel = st.answers[q.key] === s ? " checked" : "";
-            ch += `<label><input type="radio" name="${p.id}_${q.key}" value="${s}"${sel}><span>sound ${s}</span></label>`;
-          });
-          block.appendChild(el("div", "choice", ch));
+          if (q.type === "rank") {
+            block.dataset.type = "rank";
+            block.appendChild(el("p", "stmt", q.stmt));
+            const saved = st.answers[q.key] || {}; // slot -> rank
+            let rows = "";
+            SLOTS.forEach((s) => {
+              let opts = "";
+              RANKS.forEach((r) => {
+                const sel = String(saved[s]) === r ? " checked" : "";
+                opts += `<label><input type="radio" name="${p.id}_${q.key}_${s}" value="${r}"${sel}><span>${r}</span></label>`;
+              });
+              rows += `<div class="rankrow"><span class="ranklabel">sound ${s}</span><div class="rankopts">${opts}</div></div>`;
+            });
+            block.appendChild(el("div", "rankrows", rows));
+          } else {
+            block.appendChild(el("p", "stmt", q.stmt));
+            let ch = "";
+            SLOTS.forEach((s) => {
+              const sel = st.answers[q.key] === s ? " checked" : "";
+              ch += `<label><input type="radio" name="${p.id}_${q.key}" value="${s}"${sel}><span>sound ${s}</span></label>`;
+            });
+            block.appendChild(el("div", "choice", ch));
+          }
           wrap.appendChild(block);
         });
         stage.replaceChildren(wrap);
@@ -650,7 +763,7 @@
       </div><span class="anchor r">much more</span></div>
   </div>
   <div class="field" data-name="ethics" data-optional="1">
-    <label>any comments about the ethics of ai-generated audio or art? <span style="color:var(--faint)">(optional)</span></label>
+    <label>any comments, observations, or critiques about the sounds you heard?<span style="color:var(--faint)">(optional)</span></label>
     <textarea name="ethics" placeholder="open response…"></textarea>
   </div>
   <div class="slab" style="margin-top:26px">about you</div>
@@ -687,15 +800,39 @@
         const p = PROMPTS[i],
           st = session[i];
         let ok = true;
-        document.querySelectorAll(".q[data-q]").forEach((block) => {
-          const key = block.dataset.q,
-            sel = block.querySelector(`input[name="${p.id}_${key}"]:checked`);
-          if (sel) {
-            st.answers[key] = sel.value;
-            block.classList.remove("missing");
+        stage.querySelectorAll(".q[data-q]").forEach((block) => {
+          const key = block.dataset.q;
+          if (block.dataset.type === "rank") {
+            const ranks = {}; // slot -> rank (number)
+            let filled = 0;
+            SLOTS.forEach((s) => {
+              const sel = block.querySelector(
+                `input[name="${p.id}_${key}_${s}"]:checked`,
+              );
+              if (sel) {
+                ranks[s] = Number(sel.value);
+                filled++;
+              }
+            });
+            const distinct = new Set(Object.values(ranks)).size === filled;
+            if (filled === SLOTS.length && distinct) {
+              st.answers[key] = ranks;
+              block.classList.remove("missing");
+            } else {
+              ok = false;
+              block.classList.add("missing");
+            }
           } else {
-            ok = false;
-            block.classList.add("missing");
+            const sel = block.querySelector(
+              `input[name="${p.id}_${key}"]:checked`,
+            );
+            if (sel) {
+              st.answers[key] = sel.value;
+              block.classList.remove("missing");
+            } else {
+              ok = false;
+              block.classList.add("missing");
+            }
           }
         });
         return ok;
@@ -703,7 +840,6 @@
       function validateExit() {
         let ok = true,
           first = null;
-        document.querySelectorAll(".stage [data-name]").forEach(() => {});
         stage.querySelectorAll("[data-name]").forEach((node) => {
           if (node.dataset.optional) return;
           const name = node.dataset.name,
@@ -741,7 +877,7 @@
       nextBtn.addEventListener("click", async () => {
         if (step < TOTAL) {
           if (!savePrompt(step)) {
-            note.textContent = "please answer all four";
+            note.textContent = "please answer every question";
             return;
           }
           step++;
@@ -775,8 +911,19 @@
           prompts: session.map((s) => {
             const resolved = {}; // map each chosen slot back to its true condition
             QUESTIONS.forEach((q) => {
-              const slot = s.answers[q.key];
-              resolved[q.key] = { slot, condition: s.map[slot] };
+              if (q.type === "rank") {
+                const ranks = s.answers[q.key] || {}; // slot -> rank
+                resolved[q.key] = Object.entries(ranks)
+                  .map(([slot, rank]) => ({
+                    rank: Number(rank),
+                    slot,
+                    condition: s.map[slot],
+                  }))
+                  .sort((a, b) => a.rank - b.rank);
+              } else {
+                const slot = s.answers[q.key];
+                resolved[q.key] = { slot, condition: s.map[slot] };
+              }
             });
             return {
               id: s.id,

@@ -146,7 +146,8 @@
       }
       input[type="text"],
       input[type="number"],
-      select {
+      select,
+      textarea {
         width: 100%;
         background: #0b0915;
         color: var(--text);
@@ -155,6 +156,10 @@
         border: 1px solid var(--line);
         border-radius: 10px;
         padding: 11px 13px;
+      }
+      textarea {
+        min-height: 96px;
+        resize: vertical;
       }
       select {
         appearance: none;
@@ -170,7 +175,8 @@
         background-repeat: no-repeat;
       }
       input:focus,
-      select:focus {
+      select:focus,
+      textarea:focus {
         outline: none;
         border-color: var(--lav);
         box-shadow: var(--glow);
@@ -361,7 +367,7 @@
         <div id="sections"></div>
         <div class="actions">
           <button type="submit" class="btn">submit responses</button>
-          <span class="note">all fields are required</span>
+          <span class="note">starred fields are required</span>
         </div>
       </form>
 
@@ -618,6 +624,23 @@
             ),
           );
         }),
+      );
+      root.appendChild(s);
+
+      s = section("anything else", "optional — but very welcome");
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.appendChild(
+            el(
+              "label",
+              null,
+              "any extra comments, suggestions, or critiques about the tool?",
+            ),
+          );
+          f.innerHTML += `<textarea name="tool_feedback" placeholder="open response…"></textarea>`;
+          return f;
+        })(),
       );
       root.appendChild(s);
 
