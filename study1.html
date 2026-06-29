@@ -557,639 +557,633 @@
     </div>
 
     <script>
-      /* ============================================================
-   Each prompt needs three sources keyed by condition:
-     gen      = pure generation (no retrieval)
-     clap     = CLAP retrieval only (raw samples)
-     clap_st  = CLAP retrieval + style transfer (your method)
-   Files can be .mp4 (video) 
-   ============================================================ */
-      const ENDPOINT =
-        "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
-      const MEDIA = "video";
+          /* ============================================================
+       Each prompt needs three sources keyed by condition:
+         gen      = pure generation (no retrieval)
+         clap     = CLAP retrieval only (raw samples)
+         clap_st  = CLAP retrieval + style transfer (your method)
+       Files can be .mp4 (video)
+       ============================================================ */
+          const ENDPOINT =
+            "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
+          const MEDIA = "video";
 
-      const PROMPTS = [
-        {
-          id: "p01",
-          desc: "a very big scary ogre made out of stone",
-          videos: {
-            gen: "videos/p01_gen.mp4",
-            clap: "videos/p01_clap.mp4",
-            clap_st: "videos/p01_clap_st.mp4",
-          },
-        },
-        {
-          id: "p02",
-          desc: "a drunk little fairy",
-          videos: {
-            gen: "videos/p02_gen.mp4",
-            clap: "videos/p02_clap.mp4",
-            clap_st: "videos/p02_clap_st.mp4",
-          },
-        },
-        {
-          id: "p03",
-          desc: "a princess in her stone castle",
-          videos: {
-            gen: "videos/p03_gen.mp4",
-            clap: "videos/p03_clap.mp4",
-            clap_st: "videos/p03_clap_st.mp4",
-          },
-        },
-        {
-          id: "p04",
-          desc: "a metal robot walking through a peaceful forest",
-          videos: {
-            gen: "videos/p04_gen.mp4",
-            clap: "videos/p04_clap.mp4",
-            clap_st: "videos/p04_clap_st.mp4",
-          },
-        },
-        {
-          id: "p05",
-          desc: "An old tree that is a bit grumpy and annoyed by birds building nests on his branches",
-          videos: {
-            gen: "videos/p05_gen.mp4",
-            clap: "videos/p05_clap.mp4",
-            clap_st: "videos/p05_clap_st.mp4",
-          },
-        },
-        {
-          id: "p06",
-          desc: "animated skeletons that slightly dance while walking",
-          videos: {
-            gen: "videos/p06_gen.mp4",
-            clap: "videos/p06_clap.mp4",
-            clap_st: "videos/p06_clap_st.mp4",
-          },
-        },
-        {
-          id: "p07",
-          desc: "A quirky octopus",
-          videos: {
-            gen: "videos/p07_gen.mp4",
-            clap: "videos/p07_clap.mp4",
-            clap_st: "videos/p07_clap_st.mp4",
-          },
-        },
-        {
-          id: "p08",
-          desc: "A wise druid walking through snow in an old medieval village",
-          videos: {
-            gen: "videos/p08_gen.mp4",
-            clap: "videos/p08_clap.mp4",
-            clap_st: "videos/p08_clap_st.mp4",
-          },
-        },
-        {
-          id: "p09",
-          desc: "Squishy worm that is happy and makes squish noises as footsteps",
-          videos: {
-            gen: "videos/p09_gen.mp4",
-            clap: "videos/p09_clap.mp4",
-            clap_st: "videos/p09_clap_st.mp4",
-          },
-        },
-        {
-          id: "p10",
-          desc: "8-bit robot that walks around the house and completes chores",
-          videos: {
-            gen: "videos/p10_gen.mp4",
-            clap: "videos/p10_clap.mp4",
-            clap_st: "videos/p10_clap_st.mp4",
-          },
-        },
-      ];
+          const PROMPTS = [
+            {
+              id: "p01",
+              desc: "a very big scary ogre made out of stone",
+              videos: {
+                gen: "videos/p01_gen.mp4",
+                clap: "videos/p01_clap.mp4",
+                clap_st: "videos/p01_clap_st.mp4",
+              },
+            },
+            {
+              id: "p02",
+              desc: "a drunk little fairy",
+              videos: {
+                gen: "videos/p02_gen.mp4",
+                clap: "videos/p02_clap.mp4",
+                clap_st: "videos/p02_clap_st.mp4",
+              },
+            },
+            {
+              id: "p03",
+              desc: "a princess in her stone castle",
+              videos: {
+                gen: "videos/p03_gen.mp4",
+                clap: "videos/p03_clap.mp4",
+                clap_st: "videos/p03_clap_st.mp4",
+              },
+            },
+            {
+              id: "p04",
+              desc: "a metal robot walking through a peaceful forest",
+              videos: {
+                gen: "videos/p04_gen.mp4",
+                clap: "videos/p04_clap.mp4",
+                clap_st: "videos/p04_clap_st.mp4",
+              },
+            },
+            {
+              id: "p05",
+              desc: "An old tree that is a bit grumpy and annoyed by birds building nests on his branches",
+              videos: {
+                gen: "videos/p05_gen.mp4",
+                clap: "videos/p05_clap.mp4",
+                clap_st: "videos/p05_clap_st.mp4",
+              },
+            },
+            {
+              id: "p06",
+              desc: "animated skeletons that slightly dance while walking",
+              videos: {
+                gen: "videos/p06_gen.mp4",
+                clap: "videos/p06_clap.mp4",
+                clap_st: "videos/p06_clap_st.mp4",
+              },
+            },
+            {
+              id: "p07",
+              desc: "A quirky octopus",
+              videos: {
+                gen: "videos/p07_gen.mp4",
+                clap: "videos/p07_clap.mp4",
+                clap_st: "videos/p07_clap_st.mp4",
+              },
+            },
+            {
+              id: "p08",
+              desc: "A wise druid walking through snow in an old medieval village",
+              videos: {
+                gen: "videos/p08_gen.mp4",
+                clap: "videos/p08_clap.mp4",
+                clap_st: "videos/p08_clap_st.mp4",
+              },
+            },
+            {
+              id: "p09",
+              desc: "Squishy worm that is happy and makes squish noises as footsteps",
+              videos: {
+                gen: "videos/p09_gen.mp4",
+                clap: "videos/p09_clap.mp4",
+                clap_st: "videos/p09_clap_st.mp4",
+              },
+            },
+            {
+              id: "p10",
+              desc: "8-bit robot that walks around the house and completes chores",
+              videos: {
+                gen: "videos/p10_gen.mp4",
+                clap: "videos/p10_clap.mp4",
+                clap_st: "videos/p10_clap_st.mp4",
+              },
+            },
+          ];
 
-      const QUESTIONS = [
-        {
-          key: "coherent",
-          stmt: "in which video do the sounds fit together most consistently?",
-        },
-        {
-          key: "matches",
-          stmt: "which best matches the character description?",
-        },
-        {
-          key: "favourite",
-          stmt: "rank the sounds — 1 = your favourite, 3 = least",
-          type: "rank",
-        },
-      ];
-      const CONDITIONS = ["gen", "clap", "clap_st"];
-      const SLOTS = ["a", "b", "c"];
-      const RANKS = ["1", "2", "3"];
+          const QUESTIONS = [
+            {
+              key: "coherent",
+              stmt: "in which video do the sounds fit together most consistently?",
+            },
+            {
+              key: "matches",
+              stmt: "which best matches the character description?",
+            },
+            {
+              key: "favourite",
+              stmt: "rank the sounds — 1 = your favourite, 3 = least",
+              type: "rank",
+            },
+          ];
+          const CONDITIONS = ["gen", "clap", "clap_st"];
+          const SLOTS = ["a", "b", "c"];
+          const RANKS = ["1", "2", "3"];
 
-      /* ---------- per-participant blind randomization ---------- */
-      function shuffle(a) {
-        a = a.slice();
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-      }
-      const session = PROMPTS.map((p) => {
-        const order = shuffle(CONDITIONS); // condition assigned to slot a,b,c
-        const map = {};
-        SLOTS.forEach((s, i) => (map[s] = order[i]));
-        return { id: p.id, desc: p.desc, map, answers: {} };
-      });
-
-      /* ---------- state ---------- */
-      const el = (t, c, h) => {
-        const e = document.createElement(t);
-        if (c) e.className = c;
-        if (h != null) e.innerHTML = h;
-        return e;
-      };
-      const stage = document.getElementById("stage");
-      const counter = document.getElementById("counter"),
-        pfill = document.getElementById("pfill");
-      const prevBtn = document.getElementById("prev"),
-        nextBtn = document.getElementById("next"),
-        note = document.getElementById("note");
-      const TOTAL = PROMPTS.length;
-      let step = 0; // 0..TOTAL-1 prompts, TOTAL = exit page
-
-      /* ---------- ranking: keep each rank unique, auto-fill the last ---------- */
-      function enforceRank(block, changed) {
-        const slot = changed.name.split("_").pop();
-        const rank = changed.value;
-        // 1) the chosen rank can only belong to one sound — clear it elsewhere
-        block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
-          if (inp === changed) return;
-          if (inp.value === rank && inp.name.split("_").pop() !== slot)
-            inp.checked = false;
-        });
-        // 2) if two of three are set, the third is forced — fill it in
-        const assigned = {};
-        block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
-          assigned[inp.name.split("_").pop()] = inp.value;
-        });
-        const assignedSlots = Object.keys(assigned);
-        if (assignedSlots.length === SLOTS.length - 1) {
-          const missingSlot = SLOTS.find((s) => !assignedSlots.includes(s));
-          const used = Object.values(assigned);
-          const missingRank = RANKS.find((r) => !used.includes(r));
-          if (missingSlot && missingRank) {
-            const tgt = block.querySelector(
-              `input[name$="_${missingSlot}"][value="${missingRank}"]`,
-            );
-            if (tgt) tgt.checked = true;
-          }
-        }
-        block.classList.remove("missing");
-      }
-      // setting .checked programmatically doesn't fire change, so no recursion
-      stage.addEventListener("change", (e) => {
-        const input = e.target;
-        if (!input.matches('input[type="radio"]')) return;
-        const block = input.closest('.q[data-type="rank"]');
-        if (block) enforceRank(block, input);
-      });
-
-      function renderPrompt(i) {
-        const p = PROMPTS[i],
-          st = session[i];
-        counter.textContent =
-          "prompt " +
-          String(i + 1).padStart(2, "0") +
-          " / " +
-          String(TOTAL).padStart(2, "0");
-        pfill.style.width = (i / (TOTAL + 1)) * 100 + "%";
-        const wrap = el("div");
-        wrap.appendChild(el("div", "prompt-label", "character description"));
-        wrap.appendChild(el("div", "prompt-desc", "<b>" + p.desc + "</b>"));
-        const vids = el("div", "vids");
-        SLOTS.forEach((slot) => {
-          const cond = st.map[slot],
-            src = p.videos[cond];
-          const tag =
-            MEDIA === "audio"
-              ? `<audio controls preload="metadata" src="${src}"></audio>`
-              : `<video controls preload="metadata" src="${src}"></video>`;
-          vids.appendChild(
-            el("div", "vid", `<div class="name">sound ${slot}</div>${tag}`),
-          );
-        });
-        wrap.appendChild(vids);
-        QUESTIONS.forEach((q) => {
-          const block = el("div", "q");
-          block.dataset.q = q.key;
-          if (q.type === "rank") {
-            block.dataset.type = "rank";
-            block.appendChild(el("p", "stmt", q.stmt));
-            const saved = st.answers[q.key] || {}; // slot -> rank
-            let rows = "";
-            SLOTS.forEach((s) => {
-              let opts = "";
-              RANKS.forEach((r) => {
-                const sel = String(saved[s]) === r ? " checked" : "";
-                opts += `<label><input type="radio" name="${p.id}_${q.key}_${s}" value="${r}"${sel}><span>${r}</span></label>`;
-              });
-              rows += `<div class="rankrow"><span class="ranklabel">sound ${s}</span><div class="rankopts">${opts}</div></div>`;
-            });
-            block.appendChild(el("div", "rankrows", rows));
-          } else {
-            block.appendChild(el("p", "stmt", q.stmt));
-            let ch = "";
-            SLOTS.forEach((s) => {
-              const sel = st.answers[q.key] === s ? " checked" : "";
-              ch += `<label><input type="radio" name="${p.id}_${q.key}" value="${s}"${sel}><span>sound ${s}</span></label>`;
-            });
-            block.appendChild(el("div", "choice", ch));
-          }
-          wrap.appendChild(block);
-        });
-        stage.replaceChildren(wrap);
-        prevBtn.style.display = i > 0 ? "" : "none";
-        nextBtn.textContent = "next →";
-        note.textContent = "";
-      }
-
-      const EXIT_HTML = `
-  <div class="slab">a few final questions</div>
-  <div class="q" data-name="detect" style="border-top:none;padding-top:0">
-    <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
-    <div class="seg">
-      <label><input type="radio" name="detect" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="detect" value="sometimes"><span>sometimes</span></label>
-      <label><input type="radio" name="detect" value="no"><span>no</span></label>
-    </div>
-  </div>
-  <div class="field" data-name="likelihood">
-    <label>are you more or less likely to consume content (games, video) that uses ai-generated sound?</label>
-    <div class="scale"><span class="anchor">much less</span>
-      <div class="dots">
-        ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
-      </div><span class="anchor r">much more</span></div>
-  </div>
-  <div class="field" data-name="ethics" data-optional="1">
-    <label>any comments, observations, or critiques about the sounds you heard?<span style="color:var(--faint)">(optional)</span></label>
-    <textarea name="ethics" placeholder="open response…"></textarea>
-  </div>
-  <div class="slab" style="margin-top:26px">about you</div>
-  <div class="field" data-name="age">
-    <label>age <span class="req">*</span></label>
-    <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
-  </div>
-  <div class="q" data-name="plays" style="padding-top:6px">
-    <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
-    <div class="seg">
-      <label><input type="radio" name="plays" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="plays" value="sometimes"><span>sometimes</span></label>
-      <label><input type="radio" name="plays" value="no"><span>no</span></label>
-    </div>
-  </div>
-  <div class="q" data-name="audio_bg">
-    <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
-    <div class="seg">
-      <label><input type="radio" name="audio_bg" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="audio_bg" value="no"><span>no</span></label>
-    </div>
-  </div>`;
-
-      function renderExit() {
-        counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
-        pfill.style.width = (TOTAL / (TOTAL + 1)) * 100 + "%";
-        stage.replaceChildren(el("div", null, EXIT_HTML));
-        prevBtn.style.display = "";
-        nextBtn.textContent = "submit responses";
-        note.textContent = "";
-      }
-
-      function savePrompt(i) {
-        const p = PROMPTS[i],
-          st = session[i];
-        let ok = true;
-        stage.querySelectorAll(".q[data-q]").forEach((block) => {
-          const key = block.dataset.q;
-          if (block.dataset.type === "rank") {
-            const ranks = {}; // slot -> rank (number)
-            let filled = 0;
-            SLOTS.forEach((s) => {
-              const sel = block.querySelector(
-                `input[name="${p.id}_${key}_${s}"]:checked`,
-              );
-              if (sel) {
-                ranks[s] = Number(sel.value);
-                filled++;
-              }
-            });
-            const distinct = new Set(Object.values(ranks)).size === filled;
-            if (filled === SLOTS.length && distinct) {
-              st.answers[key] = ranks;
-              block.classList.remove("missing");
-            } else {
-              ok = false;
-              block.classList.add("missing");
+          function shuffle(a) {
+            a = a.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [a[i], a[j]] = [a[j], a[i]];
             }
-          } else {
-            const sel = block.querySelector(
-              `input[name="${p.id}_${key}"]:checked`,
-            );
-            if (sel) {
-              st.answers[key] = sel.value;
-              block.classList.remove("missing");
-            } else {
-              ok = false;
-              block.classList.add("missing");
-            }
+            return a;
           }
-        });
-        return ok;
-      }
-      function validateExit() {
-        let ok = true,
-          first = null;
-        stage.querySelectorAll("[data-name]").forEach((node) => {
-          if (node.dataset.optional) return;
-          const name = node.dataset.name,
-            f = node.querySelector(`[name="${name}"]`);
-          const has =
-            f &&
-            (f.type === "radio"
-              ? !!node.querySelector(`[name="${name}"]:checked`)
-              : f.value.trim());
-          node.classList.toggle("missing", !has);
-          if (!has && !first) {
-            first = node;
-            ok = false;
-          }
-        });
-        if (first)
-          first.scrollIntoView({ behavior: "smooth", block: "center" });
-        return ok;
-      }
-      function collectExit() {
-        const ex = {};
-        ["detect", "likelihood", "ethics", "age", "plays", "audio_bg"].forEach(
-          (n) => {
-            const f = stage.querySelector(`[name="${n}"]`);
-            if (!f) return;
-            ex[n] =
-              f.type === "radio"
-                ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
-                : f.value.trim();
-          },
-        );
-        return ex;
-      }
+          const session = PROMPTS.map((p) => {
+            const order = shuffle(CONDITIONS);
+            const map = {};
+            SLOTS.forEach((s, i) => (map[s] = order[i]));
+            return { id: p.id, desc: p.desc, map, answers: {} };
+          });
 
-      nextBtn.addEventListener("click", async () => {
-        if (step < TOTAL) {
-          if (!savePrompt(step)) {
-            note.textContent = "please answer every question";
-            return;
-          }
-          step++;
-          if (step < TOTAL) renderPrompt(step);
-          else renderExit();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        } else {
-          if (!validateExit()) {
-            note.textContent = "please complete the required fields";
-            return;
-          }
-          await submitAll();
-        }
-      });
-      prevBtn.addEventListener("click", () => {
-        if (step === TOTAL) {
-          step--;
-          renderPrompt(step);
-        } else if (step > 0) {
-          step--;
-          renderPrompt(step);
-        }
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-
-      async function submitAll() {
-        const exit = collectExit();
-        const payload = {
-          study: "study1",
-          submitted_at: new Date().toISOString(),
-          prompts: session.map((s) => {
-            const resolved = {};
-            QUESTIONS.forEach((q) => {
-              if (q.type === "rank") {
-                const ranks = s.answers[q.key] || {};
-                resolved[q.key] = Object.entries(ranks)
-                  .map(([slot, rank]) => ({
-                    rank: Number(rank),
-                    slot,
-                    condition: s.map[slot],
-                  }))
-                  .sort((a, b) => a.rank - b.rank);
-              } else {
-                const slot = s.answers[q.key];
-                resolved[q.key] = { slot, condition: s.map[slot] };
-              }
-            });
-            return {
-              id: s.id,
-              desc: s.desc,
-              slot_map: s.map,
-              answers: resolved,
-            };
-          }),
-          detect: exit.detect,
-          likelihood: exit.likelihood,
-          ethics: exit.ethics,
-          age: exit.age,
-          plays: exit.plays,
-          audio_bg: exit.audio_bg,
-        };
-        try {
-          if (ENDPOINT) {
-            await fetch(ENDPOINT, {
-              method: "POST",
-              mode: "no-cors",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify(payload),
-            });
-          } else {
-            console.warn("No ENDPOINT set — payload:", payload);
-          }
-          document.getElementById("actions").style.display = "none";
-          stage.style.display = "none";
-          document.querySelector("header").style.display = "none";
-          document.getElementById("done").style.display = "block";
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        } catch (err) {
-          note.textContent = "could not send — check connection and retry";
-        }
-      }
-
-      renderPrompt(0);
-
-      /* ---------- prize draw (separate submission, decoupled from answers) ---------- */
-      (function () {
-        const btn = document.getElementById("prize-btn");
-        if (!btn) return;
-        btn.addEventListener("click", async () => {
-          const name = document.getElementById("prize-name").value.trim();
-          const email = document.getElementById("prize-email").value.trim();
-          const pnote = document.getElementById("prize-note");
-          if (!name) {
-            pnote.textContent = "please enter a name (or just close the tab)";
-            return;
-          }
-          btn.disabled = true;
-          pnote.textContent = "";
-          const prizePayload = {
-            type: "prize_draw",
-            study: "study1",
-            name,
-            email,
-            submitted_at: new Date().toISOString(),
+          const el = (t, c, h) => {
+            const e = document.createElement(t);
+            if (c) e.className = c;
+            if (h != null) e.innerHTML = h;
+            return e;
           };
-          try {
-            if (ENDPOINT) {
-              await fetch(ENDPOINT, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(prizePayload),
-              });
-            } else {
-              console.warn("No ENDPOINT set — prize payload:", prizePayload);
-            }
-            document.getElementById("prize").style.display = "none";
-            document.getElementById("prize-after").style.display = "block";
-          } catch (err) {
-            pnote.textContent = "could not enter — check connection and retry";
-            btn.disabled = false;
-          }
-        });
-      })();
+          const stage = document.getElementById("stage");
+          const counter = document.getElementById("counter"),
+            pfill = document.getElementById("pfill");
+          const prevBtn = document.getElementById("prev"),
+            nextBtn = document.getElementById("next"),
+            note = document.getElementById("note");
+          const TOTAL = PROMPTS.length;
+          let step = 0;
 
-      /* ---------- ambient background ---------- */
-      (function () {
-        const cv = document.getElementById("bg"),
-          ctx = cv.getContext("2d");
-        const reduce = window.matchMedia(
-          "(prefers-reduced-motion:reduce)",
-        ).matches;
-        let w,
-          h,
-          dpr,
-          nodes = [];
-        const rnd = () => Math.random() * 2 - 1;
-        const layout = [
-          [0.5, 0.3],
-          [0.18, 0.2],
-          [0.82, 0.16],
-          [0.3, 0.52],
-          [0.7, 0.46],
-          [0.5, 0.62],
-          [0.1, 0.7],
-          [0.9, 0.66],
-          [0.38, 0.84],
-          [0.66, 0.82],
-          [0.22, 0.4],
-          [0.86, 0.4],
-          [0.5, 0.12],
-          [0.14, 0.9],
-          [0.88, 0.88],
-        ];
-        function size() {
-          dpr = Math.min(window.devicePixelRatio || 1, 2);
-          w = cv.clientWidth = window.innerWidth;
-          h = cv.clientHeight = window.innerHeight;
-          cv.width = w * dpr;
-          cv.height = h * dpr;
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          nodes = layout.map((p, i) => ({
-            x: p[0] * w,
-            y: p[1] * h,
-            vx: rnd() * 0.32,
-            vy: rnd() * 0.32,
-            ph: i * 1.3,
-            r: i === 5 ? 4 : 2.6,
-          }));
-        }
-        size();
-        window.addEventListener("resize", size);
-        function st() {
-          const m = 24;
-          for (const n of nodes) {
-            n.vx += rnd() * 0.01;
-            n.vy += rnd() * 0.01;
-            n.vx = Math.max(-0.42, Math.min(0.42, n.vx));
-            n.vy = Math.max(-0.42, Math.min(0.42, n.vy));
-            n.x += n.vx;
-            n.y += n.vy;
-            if (n.x < m) {
-              n.x = m;
-              n.vx *= -1;
-            }
-            if (n.x > w - m) {
-              n.x = w - m;
-              n.vx *= -1;
-            }
-            if (n.y < m) {
-              n.y = m;
-              n.vy *= -1;
-            }
-            if (n.y > h - m) {
-              n.y = h - m;
-              n.vy *= -1;
-            }
-          }
-        }
-        function frame(t, mv) {
-          if (mv) st();
-          ctx.clearRect(0, 0, w, h);
-          const thr = Math.min(w, h) * 0.32;
-          ctx.lineWidth = 1;
-          for (let i = 0; i < nodes.length; i++)
-            for (let j = i + 1; j < nodes.length; j++) {
-              const d = Math.hypot(
-                nodes[i].x - nodes[j].x,
-                nodes[i].y - nodes[j].y,
-              );
-              if (d < thr) {
-                ctx.strokeStyle =
-                  "rgba(150,135,225," + (0.08 * (1 - d / thr)).toFixed(3) + ")";
-                ctx.beginPath();
-                ctx.moveTo(nodes[i].x, nodes[i].y);
-                ctx.lineTo(nodes[j].x, nodes[j].y);
-                ctx.stroke();
+          function enforceRank(block, changed) {
+            const slot = changed.name.split("_").pop();
+            const rank = changed.value;
+            block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
+              if (inp === changed) return;
+              if (inp.value === rank && inp.name.split("_").pop() !== slot)
+                inp.checked = false;
+            });
+            const assigned = {};
+            block.querySelectorAll('input[type="radio"]:checked').forEach((inp) => {
+              assigned[inp.name.split("_").pop()] = inp.value;
+            });
+            const assignedSlots = Object.keys(assigned);
+            if (assignedSlots.length === SLOTS.length - 1) {
+              const missingSlot = SLOTS.find((s) => !assignedSlots.includes(s));
+              const used = Object.values(assigned);
+              const missingRank = RANKS.find((r) => !used.includes(r));
+              if (missingSlot && missingRank) {
+                const tgt = block.querySelector(
+                  `input[name$="_${missingSlot}"][value="${missingRank}"]`,
+                );
+                if (tgt) tgt.checked = true;
               }
             }
-          for (const p of nodes) {
-            const pulse = 0.5 + 0.4 * Math.sin(t * 1.1 + p.ph);
-            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 7);
-            g.addColorStop(
-              0,
-              "rgba(190,172,246," + (0.45 * pulse).toFixed(2) + ")",
-            );
-            g.addColorStop(0.4, "rgba(150,170,238,0.12)");
-            g.addColorStop(1, "rgba(150,170,238,0)");
-            ctx.fillStyle = g;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r * 7, 0, 7);
-            ctx.fill();
-            ctx.fillStyle = "rgba(225,222,246,0.6)";
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, 7);
-            ctx.fill();
+            block.classList.remove("missing");
           }
-        }
-        if (reduce) {
-          frame(0, false);
-        } else {
-          let t = 0;
-          (function loop() {
-            t += 0.01;
-            frame(t, true);
-            requestAnimationFrame(loop);
+          stage.addEventListener("change", (e) => {
+            const input = e.target;
+            if (!input.matches('input[type="radio"]')) return;
+            const block = input.closest('.q[data-type="rank"]');
+            if (block) enforceRank(block, input);
+          });
+
+          function renderPrompt(i) {
+            const p = PROMPTS[i],
+              st = session[i];
+            counter.textContent =
+              "prompt " +
+              String(i + 1).padStart(2, "0") +
+              " / " +
+              String(TOTAL).padStart(2, "0");
+            pfill.style.width = (i / (TOTAL + 1)) * 100 + "%";
+            const wrap = el("div");
+            wrap.appendChild(el("div", "prompt-label", "character description"));
+            wrap.appendChild(el("div", "prompt-desc", "<b>" + p.desc + "</b>"));
+            const vids = el("div", "vids");
+            SLOTS.forEach((slot) => {
+              const cond = st.map[slot],
+                src = p.videos[cond];
+              const tag =
+                MEDIA === "audio"
+                  ? `<audio controls preload="metadata" src="${src}"></audio>`
+                  : `<video controls preload="metadata" src="${src}"></video>`;
+              vids.appendChild(
+                el("div", "vid", `<div class="name">${slot}</div>${tag}`),
+              );
+            });
+            wrap.appendChild(vids);
+            QUESTIONS.forEach((q) => {
+              const block = el("div", "q");
+              block.dataset.q = q.key;
+              if (q.type === "rank") {
+                block.dataset.type = "rank";
+                block.appendChild(el("p", "stmt", q.stmt));
+                const saved = st.answers[q.key] || {}; // slot -> rank
+                let rows = "";
+                SLOTS.forEach((s) => {
+                  let opts = "";
+                  RANKS.forEach((r) => {
+                    const sel = String(saved[s]) === r ? " checked" : "";
+                    opts += `<label><input type="radio" name="${p.id}_${q.key}_${s}" value="${r}"${sel}><span>${r}</span></label>`;
+                  });
+                  rows += `<div class="rankrow"><span class="ranklabel">${s}</span><div class="rankopts">${opts}</div></div>`;
+                });
+                block.appendChild(el("div", "rankrows", rows));
+              } else {
+                block.appendChild(el("p", "stmt", q.stmt));
+                let ch = "";
+                SLOTS.forEach((s) => {
+                  const sel = st.answers[q.key] === s ? " checked" : "";
+                  ch += `<label><input type="radio" name="${p.id}_${q.key}" value="${s}"${sel}><span>${s}</span></label>`;
+                });
+                block.appendChild(el("div", "choice", ch));
+              }
+              wrap.appendChild(block);
+            });
+            stage.replaceChildren(wrap);
+            prevBtn.style.display = i > 0 ? "" : "none";
+            nextBtn.textContent = "next →";
+            note.textContent = "";
+          }
+
+          const EXIT_HTML = `
+      <div class="slab">a few final questions</div>
+      <div class="q" data-name="detect" style="border-top:none;padding-top:0">
+        <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
+        <div class="seg">
+          <label><input type="radio" name="detect" value="yes"><span>yes</span></label>
+          <label><input type="radio" name="detect" value="sometimes"><span>sometimes</span></label>
+          <label><input type="radio" name="detect" value="no"><span>no</span></label>
+        </div>
+      </div>
+      <div class="field" data-name="likelihood">
+        <label>are you more or less likely to consume content (games, video) that uses ai-generated sound?</label>
+        <div class="scale"><span class="anchor">much less</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">much more</span></div>
+      </div>
+      <div class="field" data-name="ethics" data-optional="1">
+        <label>any comments, observations, or critiques about the sounds you heard?<span style="color:var(--faint)">(optional)</span></label>
+        <textarea name="ethics" placeholder="open response…"></textarea>
+      </div>
+      <div class="slab" style="margin-top:26px">about you</div>
+      <div class="field" data-name="age">
+        <label>age <span class="req">*</span></label>
+        <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
+      </div>
+      <div class="q" data-name="plays" style="padding-top:6px">
+        <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
+        <div class="seg">
+          <label><input type="radio" name="plays" value="yes"><span>yes</span></label>
+          <label><input type="radio" name="plays" value="sometimes"><span>sometimes</span></label>
+          <label><input type="radio" name="plays" value="no"><span>no</span></label>
+        </div>
+      </div>
+      <div class="q" data-name="audio_bg">
+        <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
+        <div class="seg">
+          <label><input type="radio" name="audio_bg" value="yes"><span>yes</span></label>
+          <label><input type="radio" name="audio_bg" value="no"><span>no</span></label>
+        </div>
+      </div>`;
+
+          function renderExit() {
+            counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
+            pfill.style.width = (TOTAL / (TOTAL + 1)) * 100 + "%";
+            stage.replaceChildren(el("div", null, EXIT_HTML));
+            prevBtn.style.display = "";
+            nextBtn.textContent = "submit responses";
+            note.textContent = "";
+          }
+
+          function savePrompt(i) {
+            const p = PROMPTS[i],
+              st = session[i];
+            let ok = true;
+            stage.querySelectorAll(".q[data-q]").forEach((block) => {
+              const key = block.dataset.q;
+              if (block.dataset.type === "rank") {
+                const ranks = {}; // slot -> rank (number)
+                let filled = 0;
+                SLOTS.forEach((s) => {
+                  const sel = block.querySelector(
+                    `input[name="${p.id}_${key}_${s}"]:checked`,
+                  );
+                  if (sel) {
+                    ranks[s] = Number(sel.value);
+                    filled++;
+                  }
+                });
+                const distinct = new Set(Object.values(ranks)).size === filled;
+                if (filled === SLOTS.length && distinct) {
+                  st.answers[key] = ranks;
+                  block.classList.remove("missing");
+                } else {
+                  ok = false;
+                  block.classList.add("missing");
+                }
+              } else {
+                const sel = block.querySelector(
+                  `input[name="${p.id}_${key}"]:checked`,
+                );
+                if (sel) {
+                  st.answers[key] = sel.value;
+                  block.classList.remove("missing");
+                } else {
+                  ok = false;
+                  block.classList.add("missing");
+                }
+              }
+            });
+            return ok;
+          }
+          function validateExit() {
+            let ok = true,
+              first = null;
+            stage.querySelectorAll("[data-name]").forEach((node) => {
+              if (node.dataset.optional) return;
+              const name = node.dataset.name,
+                f = node.querySelector(`[name="${name}"]`);
+              const has =
+                f &&
+                (f.type === "radio"
+                  ? !!node.querySelector(`[name="${name}"]:checked`)
+                  : f.value.trim());
+              node.classList.toggle("missing", !has);
+              if (!has && !first) {
+                first = node;
+                ok = false;
+              }
+            });
+            if (first)
+              first.scrollIntoView({ behavior: "smooth", block: "center" });
+            return ok;
+          }
+          function collectExit() {
+            const ex = {};
+            ["detect", "likelihood", "ethics", "age", "plays", "audio_bg"].forEach(
+              (n) => {
+                const f = stage.querySelector(`[name="${n}"]`);
+                if (!f) return;
+                ex[n] =
+                  f.type === "radio"
+                    ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
+                    : f.value.trim();
+              },
+            );
+            return ex;
+          }
+
+          nextBtn.addEventListener("click", async () => {
+            if (step < TOTAL) {
+              if (!savePrompt(step)) {
+                note.textContent = "please answer every question";
+                return;
+              }
+              step++;
+              if (step < TOTAL) renderPrompt(step);
+              else renderExit();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+              if (!validateExit()) {
+                note.textContent = "please complete the required fields";
+                return;
+              }
+              await submitAll();
+            }
+          });
+          prevBtn.addEventListener("click", () => {
+            if (step === TOTAL) {
+              step--;
+              renderPrompt(step);
+            } else if (step > 0) {
+              step--;
+              renderPrompt(step);
+            }
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+
+          async function submitAll() {
+            const exit = collectExit();
+            const payload = {
+              study: "study1",
+              submitted_at: new Date().toISOString(),
+              prompts: session.map((s) => {
+                const resolved = {}; /
+                QUESTIONS.forEach((q) => {
+                  if (q.type === "rank") {
+                    const ranks = s.answers[q.key] || {};
+                    resolved[q.key] = Object.entries(ranks)
+                      .map(([slot, rank]) => ({
+                        rank: Number(rank),
+                        slot,
+                        condition: s.map[slot],
+                      }))
+                      .sort((a, b) => a.rank - b.rank);
+                  } else {
+                    const slot = s.answers[q.key];
+                    resolved[q.key] = { slot, condition: s.map[slot] };
+                  }
+                });
+                return {
+                  id: s.id,
+                  desc: s.desc,
+                  slot_map: s.map,
+                  answers: resolved,
+                };
+              }),
+              detect: exit.detect,
+              likelihood: exit.likelihood,
+              ethics: exit.ethics,
+              age: exit.age,
+              plays: exit.plays,
+              audio_bg: exit.audio_bg,
+            };
+            try {
+              if (ENDPOINT) {
+                await fetch(ENDPOINT, {
+                  method: "POST",
+                  mode: "no-cors",
+                  headers: { "Content-Type": "text/plain;charset=utf-8" },
+                  body: JSON.stringify(payload),
+                });
+              } else {
+                console.warn("No ENDPOINT set — payload:", payload);
+              }
+              document.getElementById("actions").style.display = "none";
+              stage.style.display = "none";
+              document.querySelector("header").style.display = "none";
+              document.getElementById("done").style.display = "block";
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } catch (err) {
+              note.textContent = "could not send — check connection and retry";
+            }
+          }
+
+          renderPrompt(0);
+
+          /* ---------- prize draw (separate submission, decoupled from answers) ---------- */
+          (function () {
+            const btn = document.getElementById("prize-btn");
+            if (!btn) return;
+            btn.addEventListener("click", async () => {
+              const name = document.getElementById("prize-name").value.trim();
+              const email = document.getElementById("prize-email").value.trim();
+              const pnote = document.getElementById("prize-note");
+              if (!name) {
+                pnote.textContent = "please enter a name (or just close the tab)";
+                return;
+              }
+              btn.disabled = true;
+              pnote.textContent = "";
+              const prizePayload = {
+                type: "prize_draw",
+                study: "study1",
+                name,
+                email,
+                submitted_at: new Date().toISOString(),
+              };
+              try {
+                if (ENDPOINT) {
+                  await fetch(ENDPOINT, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(prizePayload),
+                  });
+                } else {
+                  console.warn("No ENDPOINT set — prize payload:", prizePayload);
+                }
+                document.getElementById("prize").style.display = "none";
+                document.getElementById("prize-after").style.display = "block";
+              } catch (err) {
+                pnote.textContent = "could not enter — check connection and retry";
+                btn.disabled = false;
+              }
+            });
           })();
-        }
-      })();
+
+          /* ---------- ambient background ---------- */
+          (function () {
+            const cv = document.getElementById("bg"),
+              ctx = cv.getContext("2d");
+            const reduce = window.matchMedia(
+              "(prefers-reduced-motion:reduce)",
+            ).matches;
+            let w,
+              h,
+              dpr,
+              nodes = [];
+            const rnd = () => Math.random() * 2 - 1;
+            const layout = [
+              [0.5, 0.3],
+              [0.18, 0.2],
+              [0.82, 0.16],
+              [0.3, 0.52],
+              [0.7, 0.46],
+              [0.5, 0.62],
+              [0.1, 0.7],
+              [0.9, 0.66],
+              [0.38, 0.84],
+              [0.66, 0.82],
+              [0.22, 0.4],
+              [0.86, 0.4],
+              [0.5, 0.12],
+              [0.14, 0.9],
+              [0.88, 0.88],
+            ];
+            function size() {
+              dpr = Math.min(window.devicePixelRatio || 1, 2);
+              w = cv.clientWidth = window.innerWidth;
+              h = cv.clientHeight = window.innerHeight;
+              cv.width = w * dpr;
+              cv.height = h * dpr;
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+              nodes = layout.map((p, i) => ({
+                x: p[0] * w,
+                y: p[1] * h,
+                vx: rnd() * 0.32,
+                vy: rnd() * 0.32,
+                ph: i * 1.3,
+                r: i === 5 ? 4 : 2.6,
+              }));
+            }
+            size();
+            window.addEventListener("resize", size);
+            function st() {
+              const m = 24;
+              for (const n of nodes) {
+                n.vx += rnd() * 0.01;
+                n.vy += rnd() * 0.01;
+                n.vx = Math.max(-0.42, Math.min(0.42, n.vx));
+                n.vy = Math.max(-0.42, Math.min(0.42, n.vy));
+                n.x += n.vx;
+                n.y += n.vy;
+                if (n.x < m) {
+                  n.x = m;
+                  n.vx *= -1;
+                }
+                if (n.x > w - m) {
+                  n.x = w - m;
+                  n.vx *= -1;
+                }
+                if (n.y < m) {
+                  n.y = m;
+                  n.vy *= -1;
+                }
+                if (n.y > h - m) {
+                  n.y = h - m;
+                  n.vy *= -1;
+                }
+              }
+            }
+            function frame(t, mv) {
+              if (mv) st();
+              ctx.clearRect(0, 0, w, h);
+              const thr = Math.min(w, h) * 0.32;
+              ctx.lineWidth = 1;
+              for (let i = 0; i < nodes.length; i++)
+                for (let j = i + 1; j < nodes.length; j++) {
+                  const d = Math.hypot(
+                    nodes[i].x - nodes[j].x,
+                    nodes[i].y - nodes[j].y,
+                  );
+                  if (d < thr) {
+                    ctx.strokeStyle =
+                      "rgba(150,135,225," + (0.08 * (1 - d / thr)).toFixed(3) + ")";
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.stroke();
+                  }
+                }
+              for (const p of nodes) {
+                const pulse = 0.5 + 0.4 * Math.sin(t * 1.1 + p.ph);
+                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 7);
+                g.addColorStop(
+                  0,
+                  "rgba(190,172,246," + (0.45 * pulse).toFixed(2) + ")",
+                );
+                g.addColorStop(0.4, "rgba(150,170,238,0.12)");
+                g.addColorStop(1, "rgba(150,170,238,0)");
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r * 7, 0, 7);
+                ctx.fill();
+                ctx.fillStyle = "rgba(225,222,246,0.6)";
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, 7);
+                ctx.fill();
+              }
+            }
+            if (reduce) {
+              frame(0, false);
+            } else {
+              let t = 0;
+              (function loop() {
+                t += 0.01;
+                frame(t, true);
+                requestAnimationFrame(loop);
+              })();
+            }
+          })();
     </script>
   </body>
 </html>

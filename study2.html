@@ -413,11 +413,11 @@
       </form>
 
       <div class="done" id="done" style="display: none">
-        <h2>thank you ✦</h2>
+        <h2>thank you!</h2>
         <p>your responses were recorded.</p>
         <div class="prize" id="prize">
           <p class="prize-line">
-            optional — enter the draw for
+            enter the draw for
             <b>2 × CHF 20 galaxus vouchers</b>
           </p>
           <input type="text" id="prize-name" placeholder="your name" />
@@ -685,7 +685,7 @@
       );
       root.appendChild(s);
 
-      s = section("anything else", "optional — but very welcome");
+      s = section("anything else", "optional");
       s.appendChild(
         (() => {
           const f = el("div", "field");
@@ -749,7 +749,7 @@
           document.getElementById("done").style.display = "block";
           window.scrollTo({ top: 0, behavior: "smooth" });
         } catch (err) {
-          alert("Could not send — check your connection and try again.");
+          alert("Could not send; check your connection and try again.");
         }
       });
 
