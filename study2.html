@@ -472,20 +472,8 @@
           r: "strongly agree",
         },
         {
-          n: "att_style_transfer",
-          t: "the style transfer feature is fun and usable.",
-          l: "strongly disagree",
-          r: "strongly agree",
-        },
-        {
-          n: "att_use_gamedev",
-          t: "i would use this tool in my game-development pipeline.",
-          l: "strongly disagree",
-          r: "strongly agree",
-        },
-        {
           n: "att_use_music",
-          t: "i would use this tool in my music-production / composition pipeline.",
+          t: "i would use this tool in my project pipelines.",
           l: "strongly disagree",
           r: "strongly agree",
         },
@@ -606,58 +594,13 @@
 
       const root = document.getElementById("sections");
 
-      let s = section("about you");
-      s.appendChild(
-        (() => {
-          const f = el("div", "field");
-          f.dataset.req = "1";
-          f.appendChild(
-            el(
-              "label",
-              null,
-              'which best describes you? <span class="req">*</span>',
-            ),
-          );
-          f.innerHTML += `<select name="role"><option value="" disabled selected>select…</option>
-    <option>indie game dev</option><option>sound designer</option><option>composer</option>
-    <option>hobbyist</option><option>student</option><option>other</option></select>`;
-          return f;
-        })(),
-      );
-      s.appendChild(
-        (() => {
-          const f = el("div", "field");
-          f.dataset.req = "1";
-          f.appendChild(el("label", null, 'age <span class="req">*</span>'));
-          f.innerHTML += `<input type="number" name="age" min="12" max="99" placeholder="e.g. 27">`;
-          return f;
-        })(),
-      );
-      s.appendChild(
-        segField("gender", "gender", ["female", "male", "non-binary", "other"]),
-      );
-      s.appendChild(
-        segField(
-          "exp_daw",
-          "experience with DAWs (Ableton, FL Studio, Logic Pro, etc.)",
-          EXP,
-        ),
-      );
-      s.appendChild(
-        segField("exp_gamedev", "experience with indie game development", EXP),
-      );
-      s.appendChild(
-        segField("exp_ai", "experience with ai creative tools", EXP),
-      );
-      root.appendChild(s);
-
-      s = section(
+      let s = section(
         "General Impressions",
         "1 = strongly disagree / against · 5 = strongly agree / for",
       );
       ATTITUDES.forEach((a, i) =>
         s.appendChild(
-          scaleQ(a.n, a.t, String(i + 1).padStart(2, "0"), a.l, a.r, 5),
+          scaleQ(a.n, a.t, String(i + 1).padStart(2, "0"), a.l, a.r, 7),
         ),
       );
       root.appendChild(s);
@@ -717,6 +660,51 @@
           f.innerHTML += `<textarea name="tool_feedback" placeholder="open response…"></textarea>`;
           return f;
         })(),
+      );
+      root.appendChild(s);
+
+      s = section("about you");
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.dataset.req = "1";
+          f.appendChild(
+            el(
+              "label",
+              null,
+              'which best describes you? <span class="req">*</span>',
+            ),
+          );
+          f.innerHTML += `<select name="role"><option value="" disabled selected>select…</option>
+    <option>indie game dev</option><option>sound designer</option><option>composer</option>
+    <option>hobbyist</option><option>student</option><option>other</option></select>`;
+          return f;
+        })(),
+      );
+      s.appendChild(
+        (() => {
+          const f = el("div", "field");
+          f.dataset.req = "1";
+          f.appendChild(el("label", null, 'age <span class="req">*</span>'));
+          f.innerHTML += `<input type="number" name="age" min="12" max="99" placeholder="e.g. 27">`;
+          return f;
+        })(),
+      );
+      s.appendChild(
+        segField("gender", "gender", ["female", "male", "non-binary", "other"]),
+      );
+      s.appendChild(
+        segField(
+          "exp_daw",
+          "experience with DAWs (Ableton, FL Studio, Logic Pro, etc.)",
+          EXP,
+        ),
+      );
+      s.appendChild(
+        segField("exp_gamedev", "experience with indie game development", EXP),
+      );
+      s.appendChild(
+        segField("exp_ai", "experience with ai creative tools", EXP),
       );
       root.appendChild(s);
 

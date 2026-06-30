@@ -134,7 +134,7 @@
         margin-bottom: 8px;
       }
       .prompt-desc {
-        font-size: 18px;
+        font-size: 22px;
         color: var(--text);
         margin-bottom: 22px;
       }
@@ -512,9 +512,13 @@
         </div>
         <div class="pbar"><i id="pfill"></i></div>
         <p class="intro" id="intro">
-          for each character, three short clips use different sound packs (a, b,
-          c). play all three, then answer below. the order is shuffled, so judge
-          only by what you hear.
+          we'll show you <b>3 videos for each character</b>, each using a
+          different approach to producing its sound samples. evaluate them
+          <b>blindly</b>, without knowing which is which: judge how
+          <b>coherent</b> each one sounds in itself (independently of the
+          description), how well it <b>fits the description</b>, and how good is
+          the <b>quality</b>. the order is shuffled each time. this takes about
+          10–15 minutes.
         </p>
       </header>
 
@@ -558,12 +562,12 @@
 
     <script>
       /* ============================================================
-   Each prompt needs three sources keyed by condition:
-     gen      = pure generation (no retrieval)
-     clap     = CLAP retrieval only (raw samples)
-     clap_st  = CLAP retrieval + style transfer (your method)
-   Files can be .mp4 (video) 
-   ============================================================ */
+         Each prompt needs three sources keyed by condition:
+           gen      = pure generation (no retrieval)
+           clap     = CLAP retrieval only (raw samples)
+           clap_st  = CLAP retrieval + style transfer (your method)
+         Files can be .mp4 (video)
+         ============================================================ */
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
       const MEDIA = "video";
@@ -664,21 +668,25 @@
       const QUESTIONS = [
         {
           key: "coherent",
-          stmt: "in which video do the sounds fit together most consistently?",
+          stmt: "in which video do the sounds fit together most consistently (independently of the description)?",
         },
         {
           key: "matches",
           stmt: "which best matches the character description?",
         },
         {
+          key: "quality",
+          stmt: "which has best sound quality?",
+        },
+        {
           key: "favourite",
-          stmt: "rank the sounds — 1 = your favourite, 3 = least",
+          stmt: "rank the sounds: 1 = your favourite, 3 = least",
           type: "rank",
         },
       ];
       const CONDITIONS = ["gen", "clap", "clap_st"];
-      const SLOTS = ["a", "b", "c"];
-      const RANKS = ["1", "2", "3"];
+      const SLOTS = ["1", "2", "3"];
+      const RANKS = ["a", "b", "c"];
 
       function shuffle(a) {
         a = a.slice();
@@ -803,46 +811,65 @@
       }
 
       const EXIT_HTML = `
-  <div class="slab">a few final questions</div>
-  <div class="q" data-name="detect" style="border-top:none;padding-top:0">
-    <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
-    <div class="seg">
-      <label><input type="radio" name="detect" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="detect" value="sometimes"><span>sometimes</span></label>
-      <label><input type="radio" name="detect" value="no"><span>no</span></label>
-    </div>
-  </div>
-  <div class="field" data-name="likelihood">
-    <label>are you more or less likely to consume content (games, video) that uses ai-generated sound?</label>
-    <div class="scale"><span class="anchor">much less</span>
-      <div class="dots">
-        ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
-      </div><span class="anchor r">much more</span></div>
-  </div>
-  <div class="field" data-name="ethics" data-optional="1">
-    <label>any comments, observations, or critiques about the sounds you heard?<span style="color:var(--faint)">(optional)</span></label>
-    <textarea name="ethics" placeholder="open response…"></textarea>
-  </div>
-  <div class="slab" style="margin-top:26px">about you</div>
-  <div class="field" data-name="age">
-    <label>age <span class="req">*</span></label>
-    <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
-  </div>
-  <div class="q" data-name="plays" style="padding-top:6px">
-    <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
-    <div class="seg">
-      <label><input type="radio" name="plays" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="plays" value="sometimes"><span>sometimes</span></label>
-      <label><input type="radio" name="plays" value="no"><span>no</span></label>
-    </div>
-  </div>
-  <div class="q" data-name="audio_bg">
-    <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
-    <div class="seg">
-      <label><input type="radio" name="audio_bg" value="yes"><span>yes</span></label>
-      <label><input type="radio" name="audio_bg" value="no"><span>no</span></label>
-    </div>
-  </div>`;
+        <div class="slab">a few final questions</div>
+        <div class="q" data-name="detect" style="border-top:none;padding-top:0">
+          <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
+          <div class="scale"><span class="anchor">never</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">all the time</span></div>
+        </div>
+        <div class="field" data-name="likelihood">
+          <label>are you more or less likely to consume content (games, video) that uses ai-generated sound?</label>
+          <div class="scale"><span class="anchor">much less</span>
+            <div class="dots">
+              ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+            </div><span class="anchor r">much more</span></div>
+        </div>
+        <div class="field" data-name="ai_integrity">
+        <label>ai tools diminish artistic integrity, in all its forms.</label>
+        <div class="scale"><span class="anchor">strongly disagree</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="ai_integrity" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">strongly agree</span></div>
+      </div>
+      <div class="field" data-name="ai_constrained">
+        <label>ai, when used intentionally and constrained, can benefit the artistic process.</label>
+        <div class="scale"><span class="anchor">strongly disagree</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="ai_constrained" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">strongly agree</span></div>
+      </div>
+      <div class="field" data-name="ai_adds">
+        <label>ai adds to the artistic creative process, in all its forms.</label>
+        <div class="scale"><span class="anchor">strongly disagree</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="ai_adds" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">strongly agree</span></div>
+      </div>
+        <div class="field" data-name="ethics" data-optional="1">
+          <label>any extra comments?<span style="color:var(--faint)">(optional)</span></label>
+          <textarea name="ethics" placeholder="open response…"></textarea>
+        </div>
+        <div class="slab" style="margin-top:26px">about you</div>
+        <div class="field" data-name="age">
+          <label>age <span class="req">*</span></label>
+          <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
+        </div>
+        <div class="q" data-name="plays" style="padding-top:6px">
+          <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
+          <div class="scale"><span class="anchor">never</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">very often</span></div>
+        </div>
+        <div class="q" data-name="audio_bg">
+          <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
+          <div class="scale"><span class="anchor">none</span>
+          <div class="dots">
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+          </div><span class="anchor r">professional</span></div>
+        </div>`;
 
       function renderExit() {
         counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
@@ -918,16 +945,24 @@
       }
       function collectExit() {
         const ex = {};
-        ["detect", "likelihood", "ethics", "age", "plays", "audio_bg"].forEach(
-          (n) => {
-            const f = stage.querySelector(`[name="${n}"]`);
-            if (!f) return;
-            ex[n] =
-              f.type === "radio"
-                ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
-                : f.value.trim();
-          },
-        );
+        [
+          "detect",
+          "likelihood",
+          "ai_integrity",
+          "ai_constrained",
+          "ai_adds",
+          "ethics",
+          "age",
+          "plays",
+          "audio_bg",
+        ].forEach((n) => {
+          const f = stage.querySelector(`[name="${n}"]`);
+          if (!f) return;
+          ex[n] =
+            f.type === "radio"
+              ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
+              : f.value.trim();
+        });
         return ex;
       }
 
