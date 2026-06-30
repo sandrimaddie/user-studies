@@ -685,8 +685,8 @@
         },
       ];
       const CONDITIONS = ["gen", "clap", "clap_st"];
-      const SLOTS = ["1", "2", "3"];
-      const RANKS = ["a", "b", "c"];
+      const SLOTS = ["a", "b", "c"];
+      const RANKS = ["1", "2", "3"];
 
       function shuffle(a) {
         a = a.slice();
@@ -782,15 +782,16 @@
           if (q.type === "rank") {
             block.dataset.type = "rank";
             block.appendChild(el("p", "stmt", q.stmt));
-            const saved = st.answers[q.key] || {}; // slot -> rank
+            const saved = st.answers[q.key] || {};
+            const RANK_LABELS = { 1: "1st", 2: "2nd", 3: "3rd" };
             let rows = "";
-            SLOTS.forEach((s) => {
+            RANKS.forEach((r) => {
               let opts = "";
-              RANKS.forEach((r) => {
-                const sel = String(saved[s]) === r ? " checked" : "";
-                opts += `<label><input type="radio" name="${p.id}_${q.key}_${s}" value="${r}"${sel}><span>${r}</span></label>`;
+              SLOTS.forEach((s) => {
+                const sel = String(saved[r]) === s ? " checked" : "";
+                opts += `<label><input type="radio" name="${p.id}_${q.key}_${r}" value="${s}"${sel}><span>${s}</span></label>`;
               });
-              rows += `<div class="rankrow"><span class="ranklabel">${s}</span><div class="rankopts">${opts}</div></div>`;
+              rows += `<div class="rankrow"><span class="ranklabel">${RANK_LABELS[r]}</span><div class="rankopts">${opts}</div></div>`;
             });
             block.appendChild(el("div", "rankrows", rows));
           } else {
@@ -816,7 +817,7 @@
           <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
           <div class="scale"><span class="anchor">never</span>
           <div class="dots">
-            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="detect" value="${i}"><span>${i}</span></label>`).join("")}
           </div><span class="anchor r">all the time</span></div>
         </div>
         <div class="field" data-name="likelihood">
@@ -860,14 +861,14 @@
           <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
           <div class="scale"><span class="anchor">never</span>
           <div class="dots">
-            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="plays" value="${i}"><span>${i}</span></label>`).join("")}
           </div><span class="anchor r">very often</span></div>
         </div>
         <div class="q" data-name="audio_bg">
           <p class="stmt">do you have any audio, music, or sound-design background? <span class="req">*</span></p>
           <div class="scale"><span class="anchor">none</span>
           <div class="dots">
-            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="likelihood" value="${i}"><span>${i}</span></label>`).join("")}
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="audio_bg" value="${i}"><span>${i}</span></label>`).join("")}
           </div><span class="anchor r">professional</span></div>
         </div>`;
 
@@ -887,20 +888,20 @@
         stage.querySelectorAll(".q[data-q]").forEach((block) => {
           const key = block.dataset.q;
           if (block.dataset.type === "rank") {
-            const ranks = {}; // slot -> rank (number)
+            const picks = {};
             let filled = 0;
-            SLOTS.forEach((s) => {
+            RANKS.forEach((r) => {
               const sel = block.querySelector(
-                `input[name="${p.id}_${key}_${s}"]:checked`,
+                `input[name="${p.id}_${key}_${r}"]:checked`,
               );
               if (sel) {
-                ranks[s] = Number(sel.value);
+                picks[r] = sel.value;
                 filled++;
               }
             });
-            const distinct = new Set(Object.values(ranks)).size === filled;
-            if (filled === SLOTS.length && distinct) {
-              st.answers[key] = ranks;
+            const distinct = new Set(Object.values(picks)).size === filled;
+            if (filled === RANKS.length && distinct) {
+              st.answers[key] = picks;
               block.classList.remove("missing");
             } else {
               ok = false;
@@ -1004,9 +1005,9 @@
             const resolved = {};
             QUESTIONS.forEach((q) => {
               if (q.type === "rank") {
-                const ranks = s.answers[q.key] || {};
-                resolved[q.key] = Object.entries(ranks)
-                  .map(([slot, rank]) => ({
+                const picks = s.answers[q.key] || {};
+                resolved[q.key] = Object.entries(picks)
+                  .map(([rank, slot]) => ({
                     rank: Number(rank),
                     slot,
                     condition: s.map[slot],
@@ -1026,6 +1027,9 @@
           }),
           detect: exit.detect,
           likelihood: exit.likelihood,
+          ai_integrity: exit.ai_integrity,
+          ai_constrained: exit.ai_constrained,
+          ai_adds: exit.ai_adds,
           ethics: exit.ethics,
           age: exit.age,
           plays: exit.plays,
