@@ -247,17 +247,14 @@
         align-items: center;
         gap: 14px;
         flex-wrap: wrap;
+        justify-content: center;
       }
       .anchor {
         font-size: 11px;
-        color: var(--faint);
+        color: var(--muted);
         flex: 0 0 auto;
       }
-      .anchor.l {
-        min-width: 96px;
-      }
       .anchor.r {
-        margin-left: auto;
         text-align: right;
       }
       .dots {
@@ -302,6 +299,116 @@
       .q.missing .stmt,
       .field.missing > label {
         color: var(--bad);
+      }
+
+      /* CSI paired-factor comparison (Part 2) */
+      .pairq {
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+      }
+      .pairq:first-of-type {
+        border-top: none;
+      }
+      .pairq .stmt {
+        font-size: 14px;
+        margin-bottom: 13px;
+      }
+      .pairopts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .pairopts label {
+        cursor: pointer;
+      }
+      .pairopts input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .pairopts span {
+        display: block;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        transition: 0.16s;
+      }
+      .pairopts label:hover span {
+        border-color: var(--line-2);
+        color: var(--text);
+      }
+      .pairopts input:checked + span {
+        border-color: var(--lav);
+        background: var(--lav);
+        color: #0b0915;
+        box-shadow: var(--glow);
+      }
+      .pairopts input:focus-visible + span {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .pairq.missing .stmt {
+        color: var(--bad);
+      }
+
+      .consent-head {
+        font-size: 20px;
+        color: var(--text);
+        margin-bottom: 14px;
+        text-transform: lowercase;
+      }
+      .consent p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .consent ul {
+        margin: 0 0 12px 18px;
+      }
+      .consent li {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .consent a {
+        color: var(--lav);
+        text-decoration: none;
+      }
+      .agree {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid var(--line-2);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.16s;
+      }
+      .agree:hover {
+        border-color: var(--lav);
+      }
+      .agree input {
+        margin-top: 2px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--lav);
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .agree span {
+        font-size: 13.5px;
+        color: var(--text);
+      }
+      .agree.missing {
+        border-color: var(--bad);
+      }
+      .consent-note {
+        font-size: 11px;
+        color: var(--faint);
+        margin-top: 12px;
       }
 
       .actions {
@@ -404,6 +511,27 @@
         </p>
       </header>
 
+      <section class="section" id="consent-screen">
+        <div class="slab">before we start</div>
+        <div class="consent-head">information &amp; consent</div>
+        <div class="consent" id="consent-body"></div>
+        <label class="agree" id="agree-row">
+          <input type="checkbox" id="agree-box" />
+          <span
+            >i have read the information above and agree to participate. i am 18
+            or older.</span
+          >
+        </label>
+        <p class="consent-note">
+          no signature required. you may request a copy of this information for
+          your records.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn" id="consent-start">start →</button>
+          <span class="note" id="consent-note-msg"></span>
+        </div>
+      </section>
+
       <form id="form" novalidate>
         <div id="sections"></div>
         <div class="actions">
@@ -443,6 +571,26 @@
     <script>
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
+
+      const S2_CONSENT_KEY = "study2_consent";
+
+      const CONSENT_INFO = {
+        title: "SFXCHAR",
+        researcher: "Madeleine Sandri",
+        supervisor: "Henry Raymond, Henning Metzmacher",
+        institution: "ETH Zürich, GTC",
+        contact: "madeleine.sandri@gmail.com",
+      };
+      const CONSENT_BODY_HTML = `
+        <p>study: ${CONSENT_INFO.title} · researcher: ${CONSENT_INFO.researcher} (${CONSENT_INFO.supervisor}), ${CONSENT_INFO.institution}.</p>
+        <p>you're taking part in a research study on tools that generate sound for video-game characters.</p>
+        <ul>
+          <li>participation is voluntary. you can stop anytime without giving a reason.</li>
+          <li>your responses are stored anonymously and reported only in aggregated form, for this thesis and any resulting publication.</li>
+          <li>we collect your ratings, comments, and basic background. no audio or video of you is recorded.</li>
+          <li>the optional prize draw collects your name/email only to contact a winner. This data kept separate from your responses and deleted after the draw.</li>
+          <li>questions: <a href="mailto:${CONSENT_INFO.contact}">${CONSENT_INFO.contact}</a> (study)</li>
+        </ul>`;
 
       const EXP = ["none", "beginner", "intermediate", "advanced"];
 
@@ -548,6 +696,33 @@
         },
       ];
 
+      const CSI_FACTORS = [
+        {
+          key: "exploration",
+          stmt: "being able to explore many different ideas and possibilities",
+        },
+        {
+          key: "expressiveness",
+          stmt: "being able to express myself and be creative",
+        },
+        {
+          key: "immersion",
+          stmt: "becoming immersed and absorbed in the activity",
+        },
+        {
+          key: "enjoyment",
+          stmt: "enjoying using the tool",
+        },
+        {
+          key: "results worth effort",
+          stmt: "producing results that were worth the effort",
+        },
+      ];
+      const CSI_PAIRS = [];
+      for (let i = 0; i < CSI_FACTORS.length; i++)
+        for (let j = i + 1; j < CSI_FACTORS.length; j++)
+          CSI_PAIRS.push([CSI_FACTORS[i], CSI_FACTORS[j]]);
+
       const el = (t, c, h) => {
         const e = document.createElement(t);
         if (c) e.className = c;
@@ -646,6 +821,32 @@
       );
       root.appendChild(s);
 
+      s = section(
+        "what mattered most",
+        "cherry & latulipe (2014) · for each pair, pick the one that was more important to you while using the tool",
+      );
+      CSI_PAIRS.forEach((pair, i) => {
+        const q = el("div", "pairq");
+        q.dataset.req = "1";
+        q.dataset.name = "csi_cmp_" + i;
+        q.appendChild(
+          el(
+            "p",
+            "stmt",
+            `<span class="qn">${String(i + 1).padStart(2, "0")}</span>which was more important to you?`,
+          ),
+        );
+        const shown =
+          Math.random() < 0.5 ? [pair[0], pair[1]] : [pair[1], pair[0]];
+        let opts = "";
+        shown.forEach((fac) => {
+          opts += `<label><input type="radio" name="csi_cmp_${i}" value="${fac.key}"><span>${fac.stmt}</span></label>`;
+        });
+        q.appendChild(el("div", "pairopts", opts));
+        s.appendChild(q);
+      });
+      root.appendChild(s);
+
       s = section("anything else", "optional");
       s.appendChild(
         (() => {
@@ -676,8 +877,7 @@
             ),
           );
           f.innerHTML += `<select name="role"><option value="" disabled selected>select…</option>
-    <option>indie game dev</option><option>sound designer</option><option>composer</option>
-    <option>hobbyist</option><option>student</option><option>other</option></select>`;
+    <option>game developer / designer</option><option>sound designer</option><option>ML engineer</option><option>other</option></select>`;
           return f;
         })(),
       );
@@ -709,12 +909,77 @@
       root.appendChild(s);
 
       const form = document.getElementById("form");
+
+      let s2Consented = false,
+        s2ConsentAt = "";
+      try {
+        const c = sessionStorage.getItem(S2_CONSENT_KEY);
+        if (c) {
+          const o = JSON.parse(c);
+          if (o && o.agreed) {
+            s2Consented = true;
+            s2ConsentAt = o.at || "";
+          }
+        }
+      } catch (e) {}
+      const consentScreen = document.getElementById("consent-screen");
+      document.getElementById("consent-body").innerHTML = CONSENT_BODY_HTML;
+      function showForm() {
+        consentScreen.style.display = "none";
+        form.style.display = "";
+      }
+      if (s2Consented) {
+        showForm();
+      } else {
+        form.style.display = "none";
+      }
+      document.getElementById("consent-start").addEventListener("click", () => {
+        const box = document.getElementById("agree-box");
+        const row = document.getElementById("agree-row");
+        const msg = document.getElementById("consent-note-msg");
+        if (!box.checked) {
+          row.classList.add("missing");
+          msg.textContent = "please check the box to continue";
+          return;
+        }
+        s2Consented = true;
+        s2ConsentAt = new Date().toISOString();
+        try {
+          sessionStorage.setItem(
+            S2_CONSENT_KEY,
+            JSON.stringify({ agreed: true, at: s2ConsentAt }),
+          );
+        } catch (e) {}
+        showForm();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      document.getElementById("agree-box").addEventListener("change", (e) => {
+        if (e.target.checked)
+          document.getElementById("agree-row").classList.remove("missing");
+      });
+
       function collect() {
         const data = {
           study: "study2",
           submitted_at: new Date().toISOString(),
         };
         new FormData(form).forEach((v, k) => (data[k] = v));
+        const counts = {
+          exploration: 0,
+          expressiveness: 0,
+          immersion: 0,
+          enjoyment: 0,
+          "results worth effort": 0,
+        };
+        Object.keys(data).forEach((k) => {
+          if (k.indexOf("csi_cmp_") === 0 && data[k] in counts)
+            counts[data[k]]++;
+        });
+        Object.entries(counts).forEach(([f, c]) => {
+          data["csi_weight_" + f.replace(/\s+/g, "_")] = c;
+        });
+        data.consent_agreed = s2Consented ? "yes" : "";
+        data.consent_at = s2ConsentAt;
         return data;
       }
       function validate() {
@@ -754,6 +1019,9 @@
           form.style.display = "none";
           document.getElementById("done").style.display = "block";
           window.scrollTo({ top: 0, behavior: "smooth" });
+          try {
+            sessionStorage.removeItem(S2_CONSENT_KEY);
+          } catch (e) {}
         } catch (err) {
           alert("Could not send; check your connection and try again.");
         }

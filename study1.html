@@ -306,6 +306,7 @@
       input[type="text"],
       input[type="number"],
       input[type="email"],
+      select,
       textarea {
         width: 100%;
         background: #0b0915;
@@ -320,7 +321,21 @@
         min-height: 96px;
         resize: vertical;
       }
+      select {
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) 18px,
+          calc(100% - 13px) 18px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
       input:focus,
+      select:focus,
       textarea:focus {
         outline: none;
         border-color: var(--lav);
@@ -363,13 +378,13 @@
         align-items: center;
         gap: 14px;
         flex-wrap: wrap;
+        justify-content: center;
       }
       .anchor {
         font-size: 11px;
-        color: var(--faint);
+        color: var(--muted);
       }
       .anchor.r {
-        margin-left: auto;
         text-align: right;
       }
       .dots {
@@ -404,6 +419,65 @@
       }
       .field.missing > label {
         color: var(--bad);
+      }
+
+      /* consent gate */
+      .consent-head {
+        font-size: 20px;
+        color: var(--text);
+        margin-bottom: 14px;
+        text-transform: lowercase;
+      }
+      .consent p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .consent ul {
+        margin: 0 0 12px 18px;
+      }
+      .consent li {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .consent a {
+        color: var(--lav);
+        text-decoration: none;
+      }
+      .agree {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid var(--line-2);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.16s;
+      }
+      .agree:hover {
+        border-color: var(--lav);
+      }
+      .agree input {
+        margin-top: 2px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--lav);
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .agree span {
+        font-size: 13.5px;
+        color: var(--text);
+      }
+      .agree.missing {
+        border-color: var(--bad);
+      }
+      .consent-note {
+        font-size: 11px;
+        color: var(--faint);
+        margin-top: 12px;
       }
 
       .actions {
@@ -563,14 +637,46 @@
     <script>
       /* ============================================================
          Each prompt needs three sources keyed by condition:
-           gen      = pure generation (no retrieval)
-           clap     = CLAP retrieval only (raw samples)
-           clap_st  = CLAP retrieval + style transfer (your method)
-         Files can be .mp4 (video)
+           gen      = pure generation 
+           clap     = CLAP retrieval only 
+           clap_st  = CLAP retrieval + style transfer 
          ============================================================ */
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
       const MEDIA = "video";
+
+      const SAVE_KEY = "study1_session";
+      const STEP_KEY = "study1_step";
+      const CONSENT_KEY = "study1_consent";
+
+      /* Fill these in — they appear on the consent screen. */
+      const CONSENT_INFO = {
+        title: "SFXCHAR",
+        researcher: "Madeleine Sandri",
+        supervisor: "Henry Raymond, Henning Metzmacher",
+        institution: "ETH Zürich, GTC",
+        contact: "madeleine.sandri@gmail.com",
+      };
+      const CONSENT_HTML = `
+        <div class="consent">
+          <div class="slab">before we start</div>
+          <div class="consent-head">information &amp; consent</div>
+          <p>study: ${CONSENT_INFO.title} · researcher: ${CONSENT_INFO.researcher} (${CONSENT_INFO.supervisor}), ${CONSENT_INFO.institution}.</p>
+          <p>you're taking part in a research study on tools that generate sound for video-game characters.</p>
+          <ul>
+            <li>participation is voluntary. you can stop anytime without giving a reason.</li>
+            <li>your responses are stored anonymously and reported only in aggregated form, for this thesis and any resulting publication.</li>
+            <li>we collect your ratings, comments, and basic background. no audio or video of you is recorded.</li>
+            <li>the optional prize draw collects your name/email only to contact a winner. This data kept separate from your responses and deleted after the draw.</li>
+            <li>questions: <a href="mailto:${CONSENT_INFO.contact}">${CONSENT_INFO.contact}</a> (study)</li>
+          </ul>
+          <label class="agree" id="agree-row">
+            <input type="checkbox" id="agree-box">
+            <span>i have read the information above and agree to participate. i am 18 or older.</span>
+          </label>
+          <p class="consent-note">you may request a copy of this information for your records.</p>
+        </div>`;
+      const EXIT_KEY = "study1_exit";
 
       const PROMPTS = [
         {
@@ -696,12 +802,54 @@
         }
         return a;
       }
-      const session = PROMPTS.map((p) => {
-        const order = shuffle(CONDITIONS); // condition assigned to slot a,b,c
-        const map = {};
-        SLOTS.forEach((s, i) => (map[s] = order[i]));
-        return { id: p.id, desc: p.desc, map, answers: {} };
-      });
+
+      function freshSession() {
+        return PROMPTS.map((p) => {
+          const order = shuffle(CONDITIONS); // condition assigned to slot a,b,c
+          const map = {};
+          SLOTS.forEach((s, i) => (map[s] = order[i]));
+          return { id: p.id, desc: p.desc, map, answers: {} };
+        });
+      }
+
+      // Restore session (shuffle + answers) verbatim if present; otherwise shuffle fresh.
+      let session;
+      try {
+        const saved = sessionStorage.getItem(SAVE_KEY);
+        const parsed = saved ? JSON.parse(saved) : null;
+        session =
+          parsed &&
+          Array.isArray(parsed) &&
+          parsed.length === PROMPTS.length &&
+          parsed.every((s) => s && s.map && s.answers)
+            ? parsed
+            : freshSession();
+      } catch (e) {
+        session = freshSession();
+      }
+
+      // Restore in-progress exit answers if present.
+      let exitAnswers = {};
+      try {
+        const se = sessionStorage.getItem(EXIT_KEY);
+        if (se) exitAnswers = JSON.parse(se) || {};
+      } catch (e) {
+        exitAnswers = {};
+      }
+
+      const EXIT_FIELDS = [
+        "detect",
+        "likelihood",
+        "ai_integrity",
+        "ai_constrained",
+        "ai_adds",
+        "ethics",
+        "role",
+        "age",
+        "gender",
+        "plays",
+        "audio_bg",
+      ];
 
       const el = (t, c, h) => {
         const e = document.createElement(t);
@@ -716,7 +864,49 @@
         nextBtn = document.getElementById("next"),
         note = document.getElementById("note");
       const TOTAL = PROMPTS.length;
-      let step = 0; // 0..TOTAL-1 prompts, TOTAL = exit page
+
+      // Restore step.
+      let step = 0;
+      try {
+        const savedStep = parseInt(sessionStorage.getItem(STEP_KEY), 10);
+        if (!isNaN(savedStep) && savedStep >= 0 && savedStep <= TOTAL)
+          step = savedStep;
+      } catch (e) {}
+
+      // Restore consent.
+      let consented = false,
+        consentAt = "";
+      let awaitingConsent = false;
+      try {
+        const c = sessionStorage.getItem(CONSENT_KEY);
+        if (c) {
+          const o = JSON.parse(c);
+          if (o && o.agreed) {
+            consented = true;
+            consentAt = o.at || "";
+          }
+        }
+      } catch (e) {}
+
+      function saveSession() {
+        try {
+          sessionStorage.setItem(SAVE_KEY, JSON.stringify(session));
+          sessionStorage.setItem(STEP_KEY, String(step));
+        } catch (e) {}
+      }
+      function saveExit() {
+        try {
+          sessionStorage.setItem(EXIT_KEY, JSON.stringify(exitAnswers));
+        } catch (e) {}
+      }
+      function clearSaved() {
+        try {
+          sessionStorage.removeItem(SAVE_KEY);
+          sessionStorage.removeItem(STEP_KEY);
+          sessionStorage.removeItem(EXIT_KEY);
+          sessionStorage.removeItem(CONSENT_KEY);
+        } catch (e) {}
+      }
 
       function enforceRank(block, changed) {
         const slot = changed.name.split("_").pop();
@@ -744,11 +934,78 @@
         }
         block.classList.remove("missing");
       }
+
+      // Soft-save the current prompt's selections (even if incomplete) so a
+      // reload restores in-progress answers. Does not validate.
+      function softSavePrompt(i) {
+        const p = PROMPTS[i],
+          st = session[i];
+        stage.querySelectorAll(".q[data-q]").forEach((block) => {
+          const key = block.dataset.q;
+          if (block.dataset.type === "rank") {
+            const picks = {};
+            RANKS.forEach((r) => {
+              const sel = block.querySelector(
+                `input[name="${p.id}_${key}_${r}"]:checked`,
+              );
+              if (sel) picks[r] = sel.value;
+            });
+            st.answers[key] = picks;
+          } else {
+            const sel = block.querySelector(
+              `input[name="${p.id}_${key}"]:checked`,
+            );
+            if (sel) st.answers[key] = sel.value;
+          }
+        });
+        saveSession();
+      }
+
+      function captureExit() {
+        EXIT_FIELDS.forEach((n) => {
+          const f = stage.querySelector(`[name="${n}"]`);
+          if (!f) return;
+          exitAnswers[n] =
+            f.type === "radio"
+              ? stage.querySelector(`[name="${n}"]:checked`)?.value || ""
+              : f.value.trim();
+        });
+        saveExit();
+      }
+
+      function applyExit() {
+        Object.entries(exitAnswers).forEach(([n, v]) => {
+          if (v === "" || v == null) return;
+          const f = stage.querySelector(`[name="${n}"]`);
+          if (!f) return;
+          if (f.type === "radio") {
+            const r = stage.querySelector(`[name="${n}"][value="${v}"]`);
+            if (r) r.checked = true;
+          } else {
+            f.value = v;
+          }
+        });
+      }
+
       stage.addEventListener("change", (e) => {
         const input = e.target;
-        if (!input.matches('input[type="radio"]')) return;
-        const block = input.closest('.q[data-type="rank"]');
-        if (block) enforceRank(block, input);
+        if (awaitingConsent) {
+          if (input && input.id === "agree-box") {
+            const row = stage.querySelector(".agree");
+            if (row && input.checked) row.classList.remove("missing");
+          }
+          return;
+        }
+        if (input.matches && input.matches('input[type="radio"]')) {
+          const block = input.closest('.q[data-type="rank"]');
+          if (block) enforceRank(block, input);
+        }
+        if (step < TOTAL) softSavePrompt(step);
+        else captureExit();
+      });
+      stage.addEventListener("input", () => {
+        if (awaitingConsent) return;
+        if (step === TOTAL) captureExit();
       });
 
       function renderPrompt(i) {
@@ -853,9 +1110,22 @@
           <textarea name="ethics" placeholder="open response…"></textarea>
         </div>
         <div class="slab" style="margin-top:26px">about you</div>
+        <div class="field" data-name="role">
+          <label>which best describes you? <span class="req">*</span></label>
+          <select name="role"><option value="" disabled selected>select…</option><option>game developer / designer</option><option>sound designer</option><option>ML engineer</option><option>other</option></select>
+        </div>
         <div class="field" data-name="age">
           <label>age <span class="req">*</span></label>
           <input type="number" name="age" min="12" max="99" placeholder="e.g. 27">
+        </div>
+        <div class="field" data-name="gender" data-optional="1">
+          <label>gender</label>
+          <div class="seg">
+            <label><input type="radio" name="gender" value="female"><span>female</span></label>
+            <label><input type="radio" name="gender" value="male"><span>male</span></label>
+            <label><input type="radio" name="gender" value="non-binary"><span>non-binary</span></label>
+            <label><input type="radio" name="gender" value="other"><span>other</span></label>
+          </div>
         </div>
         <div class="q" data-name="plays" style="padding-top:6px">
           <p class="stmt">do you play video games regularly? <span class="req">*</span></p>
@@ -872,10 +1142,21 @@
           </div><span class="anchor r">professional</span></div>
         </div>`;
 
+      function renderConsent() {
+        counter.textContent = "consent";
+        pfill.style.width = "0%";
+        stage.replaceChildren(el("div", null, CONSENT_HTML));
+        prevBtn.style.display = "none";
+        nextBtn.textContent = "start →";
+        note.textContent = "";
+        awaitingConsent = true;
+      }
+
       function renderExit() {
         counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
         pfill.style.width = (TOTAL / (TOTAL + 1)) * 100 + "%";
         stage.replaceChildren(el("div", null, EXIT_HTML));
+        applyExit();
         prevBtn.style.display = "";
         nextBtn.textContent = "submit responses";
         note.textContent = "";
@@ -920,9 +1201,11 @@
             }
           }
         });
+        saveSession();
         return ok;
       }
       function validateExit() {
+        captureExit();
         let ok = true,
           first = null;
         stage.querySelectorAll("[data-name]").forEach((node) => {
@@ -946,17 +1229,7 @@
       }
       function collectExit() {
         const ex = {};
-        [
-          "detect",
-          "likelihood",
-          "ai_integrity",
-          "ai_constrained",
-          "ai_adds",
-          "ethics",
-          "age",
-          "plays",
-          "audio_bg",
-        ].forEach((n) => {
+        EXIT_FIELDS.forEach((n) => {
           const f = stage.querySelector(`[name="${n}"]`);
           if (!f) return;
           ex[n] =
@@ -968,12 +1241,35 @@
       }
 
       nextBtn.addEventListener("click", async () => {
+        if (awaitingConsent) {
+          const box = stage.querySelector("#agree-box");
+          const row = stage.querySelector(".agree");
+          if (!box || !box.checked) {
+            if (row) row.classList.add("missing");
+            note.textContent = "please check the box to continue";
+            return;
+          }
+          consented = true;
+          consentAt = new Date().toISOString();
+          awaitingConsent = false;
+          try {
+            sessionStorage.setItem(
+              CONSENT_KEY,
+              JSON.stringify({ agreed: true, at: consentAt }),
+            );
+          } catch (e) {}
+          if (step >= TOTAL) renderExit();
+          else renderPrompt(step);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
         if (step < TOTAL) {
           if (!savePrompt(step)) {
             note.textContent = "please answer every question";
             return;
           }
           step++;
+          saveSession();
           if (step < TOTAL) renderPrompt(step);
           else renderExit();
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -993,6 +1289,7 @@
           step--;
           renderPrompt(step);
         }
+        saveSession();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
@@ -1031,9 +1328,13 @@
           ai_constrained: exit.ai_constrained,
           ai_adds: exit.ai_adds,
           ethics: exit.ethics,
+          role: exit.role,
           age: exit.age,
+          gender: exit.gender,
           plays: exit.plays,
           audio_bg: exit.audio_bg,
+          consent_agreed: consented ? "yes" : "",
+          consent_at: consentAt,
         };
         try {
           if (ENDPOINT) {
@@ -1046,6 +1347,7 @@
           } else {
             console.warn("No ENDPOINT set — payload:", payload);
           }
+          clearSaved();
           document.getElementById("actions").style.display = "none";
           stage.style.display = "none";
           document.querySelector("header").style.display = "none";
@@ -1056,7 +1358,14 @@
         }
       }
 
-      renderPrompt(0);
+      // Initial render: consent gate first, unless already consented.
+      if (!consented) {
+        renderConsent();
+      } else if (step >= TOTAL) {
+        renderExit();
+      } else {
+        renderPrompt(step);
+      }
 
       (function () {
         const btn = document.getElementById("prize-btn");
