@@ -107,12 +107,6 @@
         box-shadow: var(--glow);
         transition: width 0.35s;
       }
-      .intro {
-        color: var(--muted);
-        font-size: 13.5px;
-        margin-top: 16px;
-        max-width: 64ch;
-      }
 
       .stage {
         margin-top: 26px;
@@ -421,7 +415,7 @@
         color: var(--bad);
       }
 
-      /* consent gate */
+      /* consent + overview */
       .consent-head {
         font-size: 20px;
         color: var(--text);
@@ -433,6 +427,10 @@
         font-size: 13px;
         margin-bottom: 10px;
       }
+      .consent p b {
+        color: var(--text);
+        font-weight: 500;
+      }
       .consent ul {
         margin: 0 0 12px 18px;
       }
@@ -440,6 +438,10 @@
         color: var(--muted);
         font-size: 13px;
         margin-bottom: 6px;
+      }
+      .consent li b {
+        color: var(--lav);
+        font-weight: 500;
       }
       .consent a {
         color: var(--lav);
@@ -500,6 +502,32 @@
       }
       .btn:hover {
         filter: brightness(1.08);
+      }
+      .btn:disabled {
+        cursor: default;
+      }
+      .btn.loading {
+        position: relative;
+        color: transparent !important;
+        pointer-events: none;
+      }
+      .btn.loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border-radius: 50%;
+        border: 2px solid rgba(11, 9, 21, 0.3);
+        border-top-color: #0b0915;
+        animation: btnspin 0.7s linear infinite;
+      }
+      @keyframes btnspin {
+        to {
+          transform: rotate(360deg);
+        }
       }
       .btn.ghost {
         background: transparent;
@@ -585,15 +613,6 @@
           <div class="counter" id="counter"></div>
         </div>
         <div class="pbar"><i id="pfill"></i></div>
-        <p class="intro" id="intro">
-          we'll show you <b>3 videos for each character</b>, each using a
-          different approach to producing its sound samples. evaluate them
-          <b>blindly</b>, without knowing which is which: judge how
-          <b>coherent</b> each one sounds in itself (independently of the
-          description), how well it <b>fits the description</b>, and how good is
-          the <b>quality</b>. the order is shuffled each time. this takes about
-          10–15 minutes.
-        </p>
       </header>
 
       <div class="stage" id="stage"></div>
@@ -628,19 +647,13 @@
         </p>
         <p>
           you can close this tab.<br /><a href="index.html"
-            >← back to study hub</a
+            >← back to main page</a
           >
         </p>
       </div>
     </div>
 
     <script>
-      /* ============================================================
-         Each prompt needs three sources keyed by condition:
-           gen      = pure generation 
-           clap     = CLAP retrieval only 
-           clap_st  = CLAP retrieval + style transfer 
-         ============================================================ */
       const ENDPOINT =
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
       const MEDIA = "video";
@@ -648,8 +661,9 @@
       const SAVE_KEY = "study1_session";
       const STEP_KEY = "study1_step";
       const CONSENT_KEY = "study1_consent";
+      const INTRO_KEY = "study1_intro";
+      const EXIT_KEY = "study1_exit";
 
-      /* Fill these in — they appear on the consent screen. */
       const CONSENT_INFO = {
         title: "SFXCHAR",
         researcher: "Madeleine Sandri",
@@ -676,7 +690,20 @@
           </label>
           <p class="consent-note">you may request a copy of this information for your records.</p>
         </div>`;
-      const EXIT_KEY = "study1_exit";
+      const INTRO_HTML = `
+        <div class="consent">
+          <div class="slab">how this works</div>
+          <div class="consent-head">what you'll do</div>
+          <p>you'll read <b>10 character descriptions</b>. for each one you'll see <b>3 short videos (about 10 seconds each)</b> simulating that character's sound effects on a placeholder mesh.</p>
+          <p>for each character, compare the 3 videos on four things:</p>
+          <ul>
+            <li><b>coherence</b> — which one's sounds fit together best among themselves (regardless of the description).</li>
+            <li><b>match</b> — which best matches the character description.</li>
+            <li><b>quality</b> — which has the best sound quality.</li>
+            <li><b>preference</b> — rank the three from your favourite to your least favourite.</li>
+          </ul>
+          <p>the videos are shuffled and unlabelled every time, so judge them blind. this takes about 10–15 minutes.</p>
+        </div>`;
 
       const PROMPTS = [
         {
@@ -805,14 +832,13 @@
 
       function freshSession() {
         return PROMPTS.map((p) => {
-          const order = shuffle(CONDITIONS); // condition assigned to slot a,b,c
+          const order = shuffle(CONDITIONS);
           const map = {};
           SLOTS.forEach((s, i) => (map[s] = order[i]));
           return { id: p.id, desc: p.desc, map, answers: {} };
         });
       }
 
-      // Restore session (shuffle + answers) verbatim if present; otherwise shuffle fresh.
       let session;
       try {
         const saved = sessionStorage.getItem(SAVE_KEY);
@@ -828,7 +854,6 @@
         session = freshSession();
       }
 
-      // Restore in-progress exit answers if present.
       let exitAnswers = {};
       try {
         const se = sessionStorage.getItem(EXIT_KEY);
@@ -865,7 +890,6 @@
         note = document.getElementById("note");
       const TOTAL = PROMPTS.length;
 
-      // Restore step.
       let step = 0;
       try {
         const savedStep = parseInt(sessionStorage.getItem(STEP_KEY), 10);
@@ -873,7 +897,6 @@
           step = savedStep;
       } catch (e) {}
 
-      // Restore consent.
       let consented = false,
         consentAt = "";
       let awaitingConsent = false;
@@ -887,6 +910,12 @@
           }
         }
       } catch (e) {}
+
+      let introSeen = false;
+      try {
+        if (sessionStorage.getItem(INTRO_KEY) === "1") introSeen = true;
+      } catch (e) {}
+      let awaitingIntro = false;
 
       function saveSession() {
         try {
@@ -905,6 +934,7 @@
           sessionStorage.removeItem(STEP_KEY);
           sessionStorage.removeItem(EXIT_KEY);
           sessionStorage.removeItem(CONSENT_KEY);
+          sessionStorage.removeItem(INTRO_KEY);
         } catch (e) {}
       }
 
@@ -935,8 +965,6 @@
         block.classList.remove("missing");
       }
 
-      // Soft-save the current prompt's selections (even if incomplete) so a
-      // reload restores in-progress answers. Does not validate.
       function softSavePrompt(i) {
         const p = PROMPTS[i],
           st = session[i];
@@ -996,6 +1024,7 @@
           }
           return;
         }
+        if (awaitingIntro) return;
         if (input.matches && input.matches('input[type="radio"]')) {
           const block = input.closest('.q[data-type="rank"]');
           if (block) enforceRank(block, input);
@@ -1004,11 +1033,13 @@
         else captureExit();
       });
       stage.addEventListener("input", () => {
-        if (awaitingConsent) return;
+        if (awaitingConsent || awaitingIntro) return;
         if (step === TOTAL) captureExit();
       });
 
       function renderPrompt(i) {
+        awaitingConsent = false;
+        awaitingIntro = false;
         const p = PROMPTS[i],
           st = session[i];
         counter.textContent =
@@ -1074,7 +1105,7 @@
           <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
           <div class="scale"><span class="anchor">never</span>
           <div class="dots">
-            ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="detect" value="${i}"><span>${i}</span></label>`).join("")}
+            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="detect" value="${i}"><span>${i}</span></label>`).join("")}
           </div><span class="anchor r">all the time</span></div>
         </div>
         <div class="field" data-name="likelihood">
@@ -1143,16 +1174,30 @@
         </div>`;
 
       function renderConsent() {
+        awaitingIntro = false;
         counter.textContent = "consent";
         pfill.style.width = "0%";
         stage.replaceChildren(el("div", null, CONSENT_HTML));
         prevBtn.style.display = "none";
-        nextBtn.textContent = "start →";
+        nextBtn.textContent = "continue →";
         note.textContent = "";
         awaitingConsent = true;
       }
 
+      function renderIntro() {
+        awaitingConsent = false;
+        counter.textContent = "overview";
+        pfill.style.width = "0%";
+        stage.replaceChildren(el("div", null, INTRO_HTML));
+        prevBtn.style.display = "none";
+        nextBtn.textContent = "start →";
+        note.textContent = "";
+        awaitingIntro = true;
+      }
+
       function renderExit() {
+        awaitingConsent = false;
+        awaitingIntro = false;
         counter.textContent = "final / " + String(TOTAL).padStart(2, "0");
         pfill.style.width = (TOTAL / (TOTAL + 1)) * 100 + "%";
         stage.replaceChildren(el("div", null, EXIT_HTML));
@@ -1258,6 +1303,18 @@
               JSON.stringify({ agreed: true, at: consentAt }),
             );
           } catch (e) {}
+          if (!introSeen) renderIntro();
+          else if (step >= TOTAL) renderExit();
+          else renderPrompt(step);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        if (awaitingIntro) {
+          introSeen = true;
+          awaitingIntro = false;
+          try {
+            sessionStorage.setItem(INTRO_KEY, "1");
+          } catch (e) {}
           if (step >= TOTAL) renderExit();
           else renderPrompt(step);
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1278,7 +1335,14 @@
             note.textContent = "please complete the required fields";
             return;
           }
-          await submitAll();
+          nextBtn.disabled = true;
+          nextBtn.classList.add("loading");
+          note.textContent = "sending… please don't close this tab";
+          const sent = await submitAll();
+          if (!sent) {
+            nextBtn.disabled = false;
+            nextBtn.classList.remove("loading");
+          }
         }
       });
       prevBtn.addEventListener("click", () => {
@@ -1353,14 +1417,17 @@
           document.querySelector("header").style.display = "none";
           document.getElementById("done").style.display = "block";
           window.scrollTo({ top: 0, behavior: "smooth" });
+          return true;
         } catch (err) {
           note.textContent = "could not send — check connection and retry";
+          return false;
         }
       }
 
-      // Initial render: consent gate first, unless already consented.
       if (!consented) {
         renderConsent();
+      } else if (!introSeen) {
+        renderIntro();
       } else if (step >= TOTAL) {
         renderExit();
       } else {
@@ -1379,6 +1446,7 @@
             return;
           }
           btn.disabled = true;
+          btn.classList.add("loading");
           pnote.textContent = "";
           const prizePayload = {
             type: "prize_draw",
@@ -1403,6 +1471,7 @@
           } catch (err) {
             pnote.textContent = "could not enter — check connection and retry";
             btn.disabled = false;
+            btn.classList.remove("loading");
           }
         });
       })();

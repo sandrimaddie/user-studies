@@ -96,16 +96,6 @@
         text-transform: lowercase;
         letter-spacing: -0.01em;
       }
-      .intro {
-        color: var(--muted);
-        font-size: 14px;
-        margin-top: 16px;
-        max-width: 62ch;
-      }
-      .intro b {
-        color: var(--text);
-        font-weight: 500;
-      }
 
       .section {
         margin-top: 30px;
@@ -301,7 +291,6 @@
         color: var(--bad);
       }
 
-      /* CSI paired-factor comparison (Part 2) */
       .pairq {
         padding: 16px 0;
         border-top: 1px solid var(--line);
@@ -353,6 +342,7 @@
         color: var(--bad);
       }
 
+      /* consent + overview */
       .consent-head {
         font-size: 20px;
         color: var(--text);
@@ -364,6 +354,10 @@
         font-size: 13px;
         margin-bottom: 10px;
       }
+      .consent p b {
+        color: var(--text);
+        font-weight: 500;
+      }
       .consent ul {
         margin: 0 0 12px 18px;
       }
@@ -371,6 +365,10 @@
         color: var(--muted);
         font-size: 13px;
         margin-bottom: 6px;
+      }
+      .consent li b {
+        color: var(--lav);
+        font-weight: 500;
       }
       .consent a {
         color: var(--lav);
@@ -431,6 +429,32 @@
       }
       .btn:hover {
         filter: brightness(1.08);
+      }
+      .btn:disabled {
+        cursor: default;
+      }
+      .btn.loading {
+        position: relative;
+        color: transparent !important;
+        pointer-events: none;
+      }
+      .btn.loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border-radius: 50%;
+        border: 2px solid rgba(11, 9, 21, 0.3);
+        border-top-color: #0b0915;
+        animation: btnspin 0.7s linear infinite;
+      }
+      @keyframes btnspin {
+        to {
+          transform: rotate(360deg);
+        }
       }
       .note {
         font-size: 12px;
@@ -503,12 +527,6 @@
         <a class="back" href="index.html">← back</a>
         <div class="status"><span class="dot"></span>10–20 minute session</div>
         <h1>usability questionnaire</h1>
-        <p class="intro">
-          first, spend about <b>10-20 minutes</b> exploring the tool: generate a
-          few character sound packs and try the controls. when you're done,
-          answer the questions below based on that experience. there are no
-          wrong answers.
-        </p>
       </header>
 
       <section class="section" id="consent-screen">
@@ -523,20 +541,42 @@
           >
         </label>
         <p class="consent-note">
-          no signature required. you may request a copy of this information for
-          your records.
+          you may request a copy of this information for your records.
         </p>
         <div class="actions">
-          <button type="button" class="btn" id="consent-start">start →</button>
+          <button type="button" class="btn" id="consent-start">
+            continue →
+          </button>
           <span class="note" id="consent-note-msg"></span>
         </div>
       </section>
 
-      <form id="form" novalidate>
+      <section class="section" id="intro-screen" style="display: none">
+        <div class="slab">how this works</div>
+        <div class="consent-head">what you'll do</div>
+        <div class="consent">
+          <p>
+            first, spend about <b>10–20 minutes</b> using the tool: generate a
+            few character sound packs and try the controls, including the
+            style-transfer feature.
+          </p>
+          <p>
+            when you're done, answer the questionnaire based on that experience.
+            there are no wrong answers.
+          </p>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="intro-continue">start →</button>
+        </div>
+      </section>
+
+      <form id="form" novalidate style="display: none">
         <div id="sections"></div>
         <div class="actions">
-          <button type="submit" class="btn">submit responses</button>
-          <span class="note">starred fields are required</span>
+          <button type="submit" class="btn" id="submit-btn">
+            submit responses
+          </button>
+          <span class="note" id="submit-note">starred fields are required</span>
         </div>
       </form>
 
@@ -562,7 +602,7 @@
         </p>
         <p>
           you can close this tab.<br /><a href="index.html"
-            >← back to study hub</a
+            >← back to main page</a
           >
         </p>
       </div>
@@ -573,6 +613,7 @@
         "https://script.google.com/macros/s/AKfycbxlEp6h499NZIkLVpG6G8J_vsrNv32Kd_CMbimJE1m1YmDNmQBySdY036XNbVwzZ7nj/exec";
 
       const S2_CONSENT_KEY = "study2_consent";
+      const S2_INTRO_KEY = "study2_intro";
 
       const CONSENT_INFO = {
         title: "SFXCHAR",
@@ -595,18 +636,6 @@
       const EXP = ["none", "beginner", "intermediate", "advanced"];
 
       const ATTITUDES = [
-        {
-          n: "att_ai_general",
-          t: "in general, are you for or against ai tools in your creative pipeline?",
-          l: "strongly against",
-          r: "strongly for",
-        },
-        {
-          n: "att_creativity",
-          t: "this tool promotes rather than hinders my creativity.",
-          l: "strongly disagree",
-          r: "strongly agree",
-        },
         {
           n: "att_quality",
           t: "the quality of the samples this tool provided is good.",
@@ -642,6 +671,18 @@
           t: "i would use the style transfer feature in my own pipeline.",
           l: "strongly disagree",
           r: "strongly agree",
+        },
+        {
+          n: "att_creativity",
+          t: "this tool promotes rather than hinders my creativity.",
+          l: "strongly disagree",
+          r: "strongly agree",
+        },
+        {
+          n: "att_ai_general",
+          t: "in general, are you for or against ai tools in your creative pipeline?",
+          l: "strongly against",
+          r: "strongly for",
         },
       ];
 
@@ -909,9 +950,11 @@
       root.appendChild(s);
 
       const form = document.getElementById("form");
+      const submitBtn = document.getElementById("submit-btn");
 
       let s2Consented = false,
         s2ConsentAt = "";
+      let s2IntroSeen = false;
       try {
         const c = sessionStorage.getItem(S2_CONSENT_KEY);
         if (c) {
@@ -922,17 +965,33 @@
           }
         }
       } catch (e) {}
+      try {
+        if (sessionStorage.getItem(S2_INTRO_KEY) === "1") s2IntroSeen = true;
+      } catch (e) {}
+
       const consentScreen = document.getElementById("consent-screen");
+      const introScreen = document.getElementById("intro-screen");
       document.getElementById("consent-body").innerHTML = CONSENT_BODY_HTML;
-      function showForm() {
-        consentScreen.style.display = "none";
-        form.style.display = "";
-      }
-      if (s2Consented) {
-        showForm();
-      } else {
+
+      function showConsent() {
+        consentScreen.style.display = "";
+        introScreen.style.display = "none";
         form.style.display = "none";
       }
+      function showIntro() {
+        consentScreen.style.display = "none";
+        introScreen.style.display = "";
+        form.style.display = "none";
+      }
+      function showForm() {
+        consentScreen.style.display = "none";
+        introScreen.style.display = "none";
+        form.style.display = "";
+      }
+      if (s2Consented && s2IntroSeen) showForm();
+      else if (s2Consented) showIntro();
+      else showConsent();
+
       document.getElementById("consent-start").addEventListener("click", () => {
         const box = document.getElementById("agree-box");
         const row = document.getElementById("agree-row");
@@ -950,9 +1009,19 @@
             JSON.stringify({ agreed: true, at: s2ConsentAt }),
           );
         } catch (e) {}
-        showForm();
+        showIntro();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
+      document
+        .getElementById("intro-continue")
+        .addEventListener("click", () => {
+          s2IntroSeen = true;
+          try {
+            sessionStorage.setItem(S2_INTRO_KEY, "1");
+          } catch (e) {}
+          showForm();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       document.getElementById("agree-box").addEventListener("change", (e) => {
         if (e.target.checked)
           document.getElementById("agree-row").classList.remove("missing");
@@ -1004,6 +1073,10 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!validate()) return;
+        submitBtn.disabled = true;
+        submitBtn.classList.add("loading");
+        document.getElementById("submit-note").textContent =
+          "sending… please don't close this tab";
         const payload = collect();
         try {
           if (ENDPOINT) {
@@ -1021,8 +1094,13 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
           try {
             sessionStorage.removeItem(S2_CONSENT_KEY);
+            sessionStorage.removeItem(S2_INTRO_KEY);
           } catch (e) {}
         } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("loading");
+          document.getElementById("submit-note").textContent =
+            "starred fields are required";
           alert("Could not send; check your connection and try again.");
         }
       });
@@ -1039,6 +1117,7 @@
             return;
           }
           btn.disabled = true;
+          btn.classList.add("loading");
           pnote.textContent = "";
           const prizePayload = {
             type: "prize_draw",
@@ -1063,6 +1142,7 @@
           } catch (err) {
             pnote.textContent = "could not enter — check connection and retry";
             btn.disabled = false;
+            btn.classList.remove("loading");
           }
         });
       })();
