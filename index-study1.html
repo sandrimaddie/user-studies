@@ -113,13 +113,11 @@
       }
 
       .grid {
+        display: grid;
         grid-template-columns: 1fr;
+        gap: 16px;
         max-width: 480px;
-      }
-      @media (max-width: 820px) {
-        .grid {
-          grid-template-columns: 1fr;
-        }
+        padding: 46px 0 70px;
       }
       .card {
         position: relative;
@@ -189,20 +187,6 @@
         background: var(--lav);
         box-shadow: 0 0 14px var(--lav);
       }
-      .card.soon {
-        pointer-events: none;
-        opacity: 0.5;
-      }
-      .card.soon .go {
-        color: var(--faint);
-      }
-      .card.soon .go::after {
-        content: "";
-      }
-      .card.soon .node {
-        background: var(--faint);
-        box-shadow: none;
-      }
 
       footer {
         position: relative;
@@ -239,13 +223,13 @@
           sample pack. your help would be greatly appreciated to help me
           evaluate this tool! below is a questionnaire in which you can listen
           and compare different approaches. completing it takes approx 10-15
-          minutes and would be gretly appreciated! thanks for your time and i
+          minutes and would be greatly appreciated! thanks for your time and i
           hope you have fun!
         </p>
       </header>
 
       <main class="grid">
-        <a class="card" href="study1.html">
+        <a class="card" href="study1.html?solo=1">
           <span class="node"></span>
           <span class="tag">study · comparison</span>
           <h2>listen &amp; compare</h2>
@@ -260,17 +244,6 @@
     <footer><p>master's thesis · madeleine · gtc eth zürich</p></footer>
 
     <script>
-      /**const TOOL_URL = "";
-      (function () {
-        if (TOOL_URL) {
-          const c = document.getElementById("tool-card");
-          c.href = TOOL_URL;
-          c.target = "_blank";
-          c.classList.remove("soon");
-          c.querySelector(".go").textContent = "open the tool";
-        }
-      })();**/
-
       (function () {
         const cv = document.getElementById("bg"),
           ctx = cv.getContext("2d");

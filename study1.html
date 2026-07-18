@@ -607,7 +607,7 @@
     <canvas id="bg" aria-hidden="true"></canvas>
     <div class="wrap">
       <header>
-        <a class="back" href="index.html">← back</a>
+        <a class="back" id="back-link" href="index.html">← back</a>
         <div class="topline">
           <h1 id="title">listen &amp; compare</h1>
           <div class="counter" id="counter"></div>
@@ -646,7 +646,7 @@
           you're in the draw ✦
         </p>
         <p>
-          you can close this tab.<br /><a href="index.html"
+          you can close this tab.<br /><a id="back-link-done" href="index.html"
             >← back to main page</a
           >
         </p>
@@ -663,6 +663,32 @@
       const CONSENT_KEY = "study1_consent";
       const INTRO_KEY = "study1_intro";
       const EXIT_KEY = "study1_exit";
+      const SOLO_KEY = "study1_solo";
+
+      const SOLO_HUB = "index_solo.html";
+      const FULL_HUB = "index.html";
+
+      let isSolo = false;
+      try {
+        const q = new URLSearchParams(window.location.search);
+        if (q.get("solo") === "1") {
+          isSolo = true;
+          sessionStorage.setItem(SOLO_KEY, "1");
+        } else if (q.has("solo")) {
+          isSolo = false;
+          sessionStorage.removeItem(SOLO_KEY);
+        } else if (sessionStorage.getItem(SOLO_KEY) === "1") {
+          isSolo = true;
+        }
+      } catch (e) {}
+
+      (function () {
+        const hub = isSolo ? SOLO_HUB : FULL_HUB;
+        const a = document.getElementById("back-link");
+        const b = document.getElementById("back-link-done");
+        if (a) a.href = hub;
+        if (b) b.href = hub;
+      })();
 
       const CONSENT_INFO = {
         title: "SFXCHAR",
@@ -692,14 +718,15 @@
         </div>`;
       const INTRO_HTML = `
         <div class="consent">
-          <div class="consent-head">how this works</div>
+          <div class="slab">how this works</div>
+          <div class="consent-head">what you'll do</div>
           <p>you'll read <b>10 character descriptions</b>. for each one you'll see <b>3 short videos (about 10 seconds each)</b> simulating that character's sound effects on a placeholder mesh.</p>
           <p>for each character, compare the 3 videos on four things:</p>
           <ul>
-            <li><b>coherence</b>: which one's sounds fit together best among themselves (regardless of the description).</li>
-            <li><b>match</b>: which best matches the character description.</li>
-            <li><b>quality</b>: which has the best sound quality.</li>
-            <li><b>preference</b>: rank the three from your favourite to your least favourite.</li>
+            <li><b>coherence</b> — which one's sounds fit together best among themselves (regardless of the description).</li>
+            <li><b>match</b> — which best matches the character description.</li>
+            <li><b>quality</b> — which has the best sound quality.</li>
+            <li><b>preference</b> — rank the three from your favourite to your least favourite.</li>
           </ul>
           <p>the videos are shuffled and unlabelled every time, so judge them blind. this takes about 10–15 minutes.</p>
         </div>`;
@@ -1104,7 +1131,7 @@
           <p class="stmt">could you reliably tell which sounds were ai-generated?</p>
           <div class="scale"><span class="anchor">never</span>
           <div class="dots">
-            ${[1, 2, 3, 4, 5].map((i) => `<label><input type="radio" name="detect" value="${i}"><span>${i}</span></label>`).join("")}
+            ${[1, 2, 3, 4, 5, 6, 7].map((i) => `<label><input type="radio" name="detect" value="${i}"><span>${i}</span></label>`).join("")}
           </div><span class="anchor r">all the time</span></div>
         </div>
         <div class="field" data-name="likelihood">
